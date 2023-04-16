@@ -1,0 +1,67 @@
+var type = require('./type.wxs');
+
+/**
+ * 携带单位
+ * @param num 值
+ * @param fixedDigit 位数
+ * @param defaultValue 默认值
+ * @returns
+ */
+var toUnit = function (num, fixedDigit = 2, defaultValue = 0) {
+    var floatNum = parseFloat(num);
+    var useDefaultVal = (type.isNum(defaultValue) ? defaultValue : 0).toFixed(fixedDigit);
+    if (isNaN(floatNum)) {
+        return useDefaultVal;
+    } else {
+        var len = Math.abs(floatNum).toFixed(0).length;
+        if (len > 8) {
+            return (floatNum / 10000 / 10000).toFixed(fixedDigit) + '亿';
+        } else if (len > 4 && len <= 8) {
+            return (floatNum / 10000).toFixed(fixedDigit) + '万';
+        } else {
+            return floatNum.toFixed(0);
+        }
+    }
+};
+
+// 小数点截取
+var toFixed = function (val, digit = 2) {
+    var v = parseFloat(val);
+    return (isNaN(v) ? 0 : v).toFixed(digit);
+};
+
+// 计算百分比
+var toPercent = function (all, val, digit = 0) {
+    var _digit = type.isNum(digit) ? digit : 0;
+    if (type.isNum(val) && type.isNum(all)) {
+        return ((val / all) * 100).toFixed(_digit);
+    } else {
+        console.error('总数/数据必须是数字=>', all, val);
+        return (0).toFixed(_digit);
+    }
+};
+
+// 添加后缀
+var addSuffix = function (num, suffix = '', digit = 2) {
+    var unit = type.isStr(suffix) ? suffix : '';
+    var val = parseFloat(num);
+    return (isNaN(val) ? 0 : val).toFixed(type.isNum(digit) ? digit : 2) + unit;
+};
+
+// 数字转化成百分比
+var num2Percent = function (num, digit = 2, defaultVal = '-') {
+    var floatNum = parseFloat(num);
+    if (isNaN(floatNum)) {
+        return defaultVal;
+    } else {
+        return num.toFixed(type.isNum(digit) ? digit : 2) + '%';
+    }
+};
+
+module.exports = {
+    toUnit: toUnit,
+    toFixed: toFixed,
+    toPercent: toPercent,
+    addSuffix: addSuffix,
+    num2Percent: num2Percent
+};

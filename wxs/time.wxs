@@ -1,0 +1,99 @@
+var type = require('./type.wxs');
+
+// 数字前面补零
+var to2 = function (val) {
+    if (type.isNum(val) && !isNaN(val)) {
+        return val >= 10 ? val : '0' + val;
+    } else {
+        return '00';
+    }
+};
+
+// 转换为时间对象
+var toDateObj = function (date) {
+    if (date) {
+        var dateStr = date + '';
+        var dateRe = getRegExp('^(d{4})(d{2})(d{2})$');
+        var dateTimeRe = getRegExp('^(d{4})(d{2})(d{2})(d{2})(d{2})(d{2})$');
+        if (dateRe.test(dateStr)) {
+            date = dateStr.replace(dateRe, '$1-$2-$3');
+        } else if (dateTimeRe.test(dateStr)) {
+            date = dateStr.replace(dateTimeRe, '$1-$2-$3 $4:$5:$6');
+        } else if (getRegExp('-').test(dateStr)) {
+            date = date.replace(getRegExp('-', 'g'), '/');
+        }
+        var newDate = getDate(date);
+        if (newDate && !isNaN(newDate.getTime())) {
+            return newDate;
+        } else {
+            console.log('时间转换错误，无法转时间格式=>', newDate, date);
+            return null;
+        }
+    } else {
+        console.log('时间为空，无法转时间格式=>', date);
+        return null;
+    }
+};
+
+//格式化
+var format = function (date, patternStr) {
+    var formatStr = type.isStr(patternStr) ? patternStr : 'YY-MM-DD hh:mm:ss';
+    var dateObj = toDateObj(date);
+    if (dateObj) {
+        var month = dateObj.getMonth() + 1;
+        var day = dateObj.getDate();
+        var h = dateObj.getHours();
+        var m = dateObj.getMinutes();
+        var s = dateObj.getSeconds();
+        return formatStr
+            .replace('YY', dateObj.getFullYear())
+            .replace('MM', to2(month))
+            .replace('M', month)
+            .replace('DD', to2(day))
+            .replace('D', day)
+            .replace('hh', to2(h))
+            .replace('h', h)
+            .replace('mm', to2(m))
+            .replace('m', m)
+            .replace('ss', to2(s))
+            .replace('s', s);
+    } else {
+        console.log('转换时间对象错误=>', date, pattern);
+        return '';
+    }
+};
+
+// 转换为日期
+var toDate = function (date, formatStr = 'YY-MM-DD') {
+    return format(date, formatStr);
+};
+
+// 转换为日期时间
+var toDateTime = function (date, formatStr = 'YY-MM-DD hh:mm:ss') {
+    return format(date, formatStr);
+};
+
+// 现在日期
+var nowDate = function (formatStr = 'YY-MM-DD') {
+    return format(getDate(), formatStr);
+};
+
+// 现在日期时间
+var nowDateTime = function (formatStr = 'YY-MM-DD hh:mm:ss') {
+    return format(getDate(), formatStr);
+};
+
+// 获取时间戳
+var toTimeStamp = function (date) {
+    var dateObj = toDateObj(date);
+    return dateObj ? dateObj.getTime() : 0;
+};
+
+module.exports = {
+    format: format,
+    toDate: toDate,
+    toDateTime: toDateTime,
+    nowDate: nowDate,
+    nowDateTime: nowDateTime,
+    toTimeStamp: toTimeStamp
+};

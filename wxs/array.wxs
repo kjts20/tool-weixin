@@ -1,0 +1,36 @@
+var type = require('./type.wxs');
+
+/**
+ * 按照key重组
+ * @param source
+ * @param key
+ * @returns
+ */
+var mapKey = function (arr, key) {
+    var newArr = [];
+    if (type.isArr(arr)) {
+        for (var i = 0; i < arr.length; i++) {
+            var it = arr[i];
+            if (type.isObj(it)) {
+                newArr.push(it[key]);
+            }
+        }
+    }
+    return newArr;
+};
+
+/**
+ * 数组切割
+ * @param arr 数组
+ * @param start 开始
+ * @param end 结束
+ * @returns
+ */
+var slice = function (arr, start = 0, end = -1) {
+    return (type.isArr(arr) ? arr : []).slice(start, end);
+};
+
+module.exports = {
+    slice: slice,
+    mapKey: mapKey
+};

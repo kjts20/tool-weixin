@@ -1,0 +1,46 @@
+{
+    "name": "@kjts20/tool-weixin-mp",
+    "version": "0.0.29",
+    "description": "wkj",
+    "miniprogram": "dist",
+    "main": "dist/index.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/kjts20/tool-weixin-mp.git"
+    },
+    "scripts": {
+        "build:ts": "tsup",
+        "dev": "tsup --watch",
+        "build": "npm run build:ts",
+        "prepublishOnly": "npm run build",
+        "pub": "npm version patch && npm publish"
+    },
+    "keywords": [
+        "sskj",
+        "工具包",
+        "微信小程序"
+    ],
+    "author": "wkj",
+    "license": "Apache",
+    "devDependencies": {
+        "@kjts20/tool": "^0.0.76",
+        "tsup": "^6.4.0",
+        "typescript": "^4.8.4"
+    },
+    "prettier": {
+        "tabWidth": 4,
+        "printWidth": 200,
+        "eslintIntegration": true,
+        "stylelintIntegration": true,
+        "singleQuote": true,
+        "semi": true,
+        "insertPragma": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid"
+    },
+    "files": [
+        "dist",
+        "wxs",
+        "scripts"
+    ]
+}

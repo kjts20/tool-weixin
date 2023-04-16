@@ -1,0 +1,121 @@
+var type = require('./type.wxs');
+
+/**
+ * 字段的值（按照字段数组进行返回）
+ * @param sourceData 数据源
+ * @param keys 列表/字符串，比如：['user', 'name'], 'user.name'
+ * @param defaultValue，默认值
+ * @returns
+ */
+var column = function (sourceData, keys, defaultValue = '-') {
+    var tmpData = sourceData;
+    // 键数组
+    var keyArr = type.isArr(keys) ? keys : type.isStr(keys) ? keys.split('.') : [keys];
+    for (var i = 0; i < keyArr.length; i++) {
+        var key = keyArr[i];
+        if (type.isObj(tmpData) && !type.isUndefined(key)) {
+            tmpData = tmpData[key];
+        } else {
+            return defaultValue;
+        }
+    }
+    return type.isUndefined(tmpData) ? defaultValue : defaultValue;
+};
+
+// 字符串拼接
+var join = function (arr, delimiter = '') {
+    return (type.isArr(arr) ? arr : []).join(delimiter);
+};
+
+// 字符串拼接
+var joinObject = function (arr, column, delimiter = '') {
+    return (type.isArr(arr) ? arr : [])
+        .filter(function (it) {
+            return type.isStr(it) || type.isObj(it);
+        })
+        .map(function (it) {
+            return type.isStr(it) ? it : getColumnValue(it, column);
+        })
+        .join(delimiter);
+};
+
+// 获取keys
+var getKeys = function (obj) {
+    var keys = [];
+    if (obj && type.isObj(obj)) {
+        if (type.isArr(obj)) {
+            // 数组情况下
+            for (var i = 0; i < obj.length; i++) {
+                keys.push(i);
+            }
+        } else {
+            // 对象情况下
+            JSON.stringify(obj).replace(getRegExp('"(.*?)"', 'g'), function (_, s1) {
+                if (s1 != '' && !type.isUndefined(obj[s1]) && keys.indexOf(s1) < 0) {
+                    keys.push(s1);
+                }
+            });
+        }
+    }
+    return keys;
+};
+
+// 获取长度
+var getLen = function (obj) {
+    if (type.isArr(obj)) {
+        return obj.length;
+    } else if (type.isObj(obj)) {
+        return getKeys(obj).length;
+    } else {
+        return ((obj || '') + '').length;
+    }
+};
+
+/**
+ * 数组转字典
+ * @param arr
+ * @param keyGenerator
+ */
+var list2Dict = function (arr, keyGenerator) {
+    var obj = {};
+    if (type.isFunc(keyGenerator)) {
+        (type.isArr(arr) ? arr : []).forEach(function (item) {
+            obj[keyGenerator(item)] = item;
+        });
+    } else {
+        console.error('生成可以方法不正确=>', keyGenerator);
+    }
+    return obj;
+};
+
+/**
+ * 字典转列表
+ * @param dict 字典
+ * @param saveKey 保存键的名称
+ * @returns
+ */
+var dict2List = function (dict, saveKey) {
+    var list = [];
+    if (type.isObj(dict)) {
+        getKeys(dict).forEach(function (key) {
+            var obj = dict[key];
+            if (type.isObj(obj)) {
+                if (type.isStr(saveKey) && saveKey != '') {
+                    obj[saveKey] = key;
+                }
+                list.push(obj);
+            }
+        });
+    }
+    return list;
+};
+
+module.exports = {
+    column: column,
+    join: join,
+    joinObject: joinObject,
+    getKeys: getKeys,
+    getLen: getLen,
+    list2Dict: list2Dict,
+    dict2List: dict2List
+};

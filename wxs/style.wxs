@@ -1,0 +1,79 @@
+var object = require('./object.wxs');
+var type = require('./type.wxs');
+
+// 需要添加单位的属性
+var withUnitProps = [
+    'height',
+    'minHeight',
+    'width',
+    'minWidth',
+    'padding',
+    'paddingTop',
+    'paddingBottom',
+    'paddingLeft',
+    'paddingRight',
+    'margin',
+    'marginTop',
+    'marginBottom',
+    'marginLeft',
+    'marginRight',
+    'top',
+    'left',
+    'bottom'
+];
+
+// 驼峰转烤串
+var hump2SkewerRe = getRegExp('([A-Z])', 'g');
+var hump2Skewer = function (str) {
+    if (hump2SkewerRe.test(str)) {
+        return str.replace(hump2SkewerRe, function (_, uc) {
+            return '-' + uc.toLowerCase();
+        });
+    } else {
+        return str;
+    }
+};
+
+// 生成样式
+var toStyleStr = function (key, val, unit) {
+    if (type.isNum(val) && withUnitProps.indexOf(key) >= 0) {
+        val = val + unit;
+    }
+    return hump2Skewer(key) + ':' + val;
+};
+
+// 转换成样式字符串
+var toStyleStr = function (styleObj, unit = 'rpx') {
+    if (type.isArr(styleObj)) {
+        return styleObj.join(';');
+    } else {
+        if (type.isObj(styleObj)) {
+            var style = [];
+            var objKeys = object.getKeys(styleObj);
+            for (var i = 0; i < objKeys.length; i++) {
+                var key = objKeys[i];
+                if (type.isStr(key)) {
+                    var val = styleObj[key];
+                    style.push(toStyleStr(key, val, unit));
+                }
+            }
+            return style.join(';') + ';';
+        } else {
+            return styleObj;
+        }
+    }
+};
+
+//  转样式
+var kv2Style = function (attr, val, unit = 'rpx') {
+    if (attr && !type.isUndefined(val) && val != '' && val != null) {
+        return toStyleStr(attr, val, unit) + ';';
+    } else {
+        return '';
+    }
+};
+
+module.exports = {
+    toStyleStr: toStyleStr,
+    kv2Style: kv2Style
+};

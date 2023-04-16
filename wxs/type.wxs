@@ -1,0 +1,38 @@
+// 是否字符串
+var isStr = function (str) {
+    return typeof str == 'string';
+};
+
+// 是否数组
+var isArr = function (arr) {
+    return arr && 'Array' === arr.constructor;
+};
+
+// 是否对象
+var isObj = function (obj) {
+    return obj && typeof obj == 'object';
+};
+
+// 是否字符串
+var isNum = function (num) {
+    return typeof num == 'number';
+};
+
+// 是否对象
+var isFunc = function (func) {
+    return func && typeof func == 'function';
+};
+
+// 是否定义
+var isUndefined = function (val) {
+    return typeof val == 'undefined';
+};
+
+module.exports = {
+    isStr: isStr,
+    isArr: isArr,
+    isObj: isObj,
+    isNum: isNum,
+    isFunc: isFunc,
+    isUndefined: isUndefined
+};

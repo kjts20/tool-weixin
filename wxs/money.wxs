@@ -1,0 +1,32 @@
+// 分 -> 元
+var fee2yuan = function (fee, decimal = 2) {
+    var totalFee = parseInt(fee) || 0;
+    var prefix = Math.abs(totalFee) === totalFee ? '-' : '';
+    var yuanStr = (Math.abs(totalFee) / 100).toFixed(decimal);
+    var replaceRe = getRegExp('(\\d)(?=(\\d{3})+\\.)', 'g');
+    return prefix + yuanStr.replace(replaceRe, '$1,');
+};
+
+/**
+ * 分部分
+ * @param fee
+ * @returns
+ */
+var toFeePart = function (totalFee) {
+    return ((Math.abs(parseInt(totalFee) || 0) % 100) + 100 + '').slice(1);
+};
+
+/**
+ * 元部分
+ * @param fee
+ * @returns
+ */
+var toYuanPart = function (totalFee) {
+    return fee2yuan(totalFee, 0);
+};
+
+module.exports = {
+    fee2yuan: fee2yuan,
+    toFeePart: toFeePart,
+    toYuanPart: toYuanPart
+};
