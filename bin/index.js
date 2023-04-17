@@ -29,6 +29,8 @@ const { join } = require('path');
     }
 
     // 复制cli
+    const cliFlolder = join(binFolder, 'scripts');
+    const toCliFolder = join(projetFolder, 'cli');
     if (!fs.existsSync(toCliFolder)) {
         fs.mkdirSync(toCliFolder, { recursive: true });
         copyFolderOrFile(cliFlolder, toCliFolder);
@@ -37,8 +39,6 @@ const { join } = require('path');
     }
 
     // 更新package的命令
-    const cliFlolder = join(binFolder, 'scripts');
-    const toCliFolder = join(projetFolder, 'cli');
     const packageJson = readJson(packageJsonName);
     if (packageJson !== null) {
         if (typeof packageJson.scripts !== 'object') {
