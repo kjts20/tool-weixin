@@ -7,12 +7,20 @@ const { join } = require('path');
     // 读取项目配置文件
     const projectConf = readJson(join(projetFolder, projectConfigJsonName));
     const mpRoot = join(projetFolder, projectConf.miniprogramRoot);
-    const wxsFlolder = join(binFolder, 'wxs');
-    const cliFlolder = join(binFolder, 'scripts');
-    const toWxsFolder = join(mpRoot, 'utils/wxs');
-    const toCliFolder = join(projetFolder, 'cli');
+
+    // 复制.vscode
+    const vscodeFlolder = join(binFolder, '.vscode ');
+    const toVscodeFolder = join(projetFolder, '.vscode ');
+    if (!fs.existsSync(toVscodeFolder)) {
+        fs.mkdirSync(toVscodeFolder, { recursive: true });
+        copyFolderOrFile(vscodeFlolder, toVscodeFolder);
+    } else {
+        console.error('.vscode文件夹“' + toVscodeFolder.replace(projetFolder, '') + '”已经存在');
+    }
 
     // 复制wxs文件
+    const wxsFlolder = join(binFolder, 'wxs');
+    const toWxsFolder = join(mpRoot, 'utils/wxs');
     if (!fs.existsSync(toWxsFolder)) {
         fs.mkdirSync(toWxsFolder, { recursive: true });
         copyFolderOrFile(wxsFlolder, toWxsFolder);
@@ -29,6 +37,8 @@ const { join } = require('path');
     }
 
     // 更新package的命令
+    const cliFlolder = join(binFolder, 'scripts');
+    const toCliFolder = join(projetFolder, 'cli');
     const packageJson = readJson(packageJsonName);
     if (packageJson !== null) {
         if (typeof packageJson.scripts !== 'object') {
@@ -46,7 +56,7 @@ const { join } = require('path');
         for (const key in allScripts) {
             packageJson.scripts[key] = allScripts[key];
         }
-        writeJson(packageJsonName);
+        writeJson(packageJsonName, packageJson);
     } else {
         throw new Error('package.json没有找到，命令无法写入package.json');
     }

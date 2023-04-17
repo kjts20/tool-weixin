@@ -1,21 +1,6 @@
 const { writeProjectConfig, readProjectConfig, allEnv, readAppJson, writeAppJson } = require('./common');
 
 /**
- * 格式化app.json && 路由更新
- * @returns
- */
-const toRoute = function () {
-    return writeAppJson(readAppJson());
-};
-
-/**
- * 项目初始化
- */
-const toProject = function () {
-    return writeProjectConfig(require('./templates/project.config.tmp'), allEnv.dev);
-};
-
-/**
  * 环境修改
  */
 const changeEnv = function (envStr) {
@@ -51,10 +36,10 @@ const changeEnv = function (envStr) {
         const type = typeStr.replace(typeRe, '$1');
         switch (type) {
             case 'route':
-                toRoute();
+                writeAppJson(readAppJson());
                 break;
             case 'project':
-                toProject();
+                writeProjectConfig(require('./templates/project.config.tmp'), allEnv.dev);
                 break;
             case 'changeEnv':
                 changeEnv(envStr);
