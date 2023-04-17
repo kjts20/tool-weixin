@@ -9,8 +9,8 @@ const { join } = require('path');
     const mpRoot = join(projetFolder, projectConf.miniprogramRoot);
 
     // 复制.vscode
-    const vscodeFlolder = join(binFolder, '.vscode ');
-    const toVscodeFolder = join(projetFolder, '.vscode ');
+    const vscodeFlolder = join(binFolder, '.vscode');
+    const toVscodeFolder = join(projetFolder, '.vscode');
     if (!fs.existsSync(toVscodeFolder)) {
         fs.mkdirSync(toVscodeFolder, { recursive: true });
         copyFolderOrFile(vscodeFlolder, toVscodeFolder);
