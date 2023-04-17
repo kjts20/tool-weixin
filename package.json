@@ -5,7 +5,7 @@
     "miniprogram": "dist",
     "main": "dist/index.js",
     "bin": {
-        "tool-eject": "bin/index.js"
+        "weixin-mp-eject": "bin/index.js"
     },
     "repository": {
         "type": "git",

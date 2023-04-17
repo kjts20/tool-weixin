@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 const fs = require('fs');
-const { readJson, copyFolderOrFile } = require('./scripts/utils/file');
+const { readJson, copyFolderOrFile, writeJson } = require('./scripts/utils/file');
 const { join } = require('path');
 
-(function (projetFolder, binFolder, projectConfigJsonName = 'project.config.json') {
+(function (projetFolder, binFolder, projectConfigJsonName = 'project.config.json', packageJsonName = 'package.json') {
     // 读取项目配置文件
     const projectConf = readJson(join(projetFolder, projectConfigJsonName));
     const mpRoot = join(projetFolder, projectConf.miniprogramRoot);
@@ -27,4 +27,27 @@ const { join } = require('path');
     } else {
         console.error('脚手架文件夹“' + toCliFolder.replace(projetFolder, '') + '”已经存在');
     }
-})(process.cwd(), require.main.path, process.argv[2]);
+
+    // 更新package的命令
+    const packageJson = readJson(packageJsonName);
+    if (packageJson !== null) {
+        if (typeof packageJson.scripts !== 'object') {
+            packageJson.scripts = {};
+        }
+        const allScripts = {
+            route: 'node cli/cmd.js type=route',
+            project: 'node cli/cmd.js type=project',
+            'env:prod': 'node cli/cmd.js type=changeEnv env=prod',
+            'env:pre': 'node cli/cmd.js type=changeEnv env=pre',
+            'env:dev': 'node cli/cmd.js type=changeEnv env=dev',
+            'env:test': 'node cli/cmd.js type=changeEnv env=test',
+            initp: 'npm i && npm run project'
+        };
+        for (const key in allScripts) {
+            packageJson.scripts[key] = allScripts[key];
+        }
+        writeJson(packageJsonName);
+    } else {
+        throw new Error('package.json没有找到，命令无法写入package.json');
+    }
+})(process.cwd(), require.main.path, process.argv[2], process.argv[3]);

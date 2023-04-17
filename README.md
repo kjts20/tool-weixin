@@ -8,22 +8,18 @@ npm install @kjts20/tool-weixin-mp
 
 ### 直接引入就即可使用
 
-#### 请求类
+#### 初始化方法，在 app.js 中执行方法中的初始化方法
 
-```TS
-import {httpServer} from "@kjts20/tool-weixin-mp";
+```ts
+import { httpServer } from '@kjts20/tool-weixin-mp';
+
 // 修改host
-httpServer.setHost("/");
+httpServer.setHost('/');
 // 发送get请求
-httpServer.get("/url", {id: 5});
+httpServer.get('/url', { id: 5 });
 ```
 
 ### 功能
-
-#### 提供基础的 wxs
-
--   字符串
--   对象
 
 #### 请求封装为 httpServer 形式
 
@@ -33,4 +29,8 @@ httpServer.get("/url", {id: 5});
 
 #### 跳转
 
-#### 启动的一些脚本
+-   goto
+
+#### 本地化 wxs 与脚手架
+
+执行指令：`./node_modules/.bin/weixin-mp-eject`
