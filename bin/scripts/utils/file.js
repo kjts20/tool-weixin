@@ -1,66 +1,55 @@
-const {
-    join
-} = require('path');
 const fs = require('fs');
-const {
-    error
-} = require('console');
-const {
-    fileURLToPath
-} = require('url');
+const { resolve, join } = require('path');
 
-//读取所有的文件
-function scanDir(fileOrDir, fileHandler, folderHandler) {
-    if (fs.existsSync(fileOrDir)) {
-        const stat = fs.statSync(fileOrDir);
+// 扫描文件
+function scanFolderOrFile(fileOrFolder, options) {
+    if (fs.existsSync(fileOrFolder)) {
+        // 整理处理函数
+        const { fileHandler, beforeFolderReadHandler, afterFolderReadHandler } = options || {};
+        const sFileHandler = typeof fileHandler === 'function' ? fileHandler : () => {};
+        const sBeforeFolderReadHandler = typeof beforeFolderReadHandler === 'function' ? beforeFolderReadHandler : () => true;
+        const sAfterFolderReadHandler = typeof afterFolderReadHandler === 'function' ? afterFolderReadHandler : () => {};
+        // 判断类型并进行回调
+        const stat = fs.statSync(fileOrFolder);
         if (stat.isFile()) {
-            if (typeof fileHandler === 'function') {
-                fileHandler(fileOrDir);
-            }
+            sFileHandler(fileOrFolder);
         } else if (stat.isDirectory()) {
-            // 文件夹处理函数
-            if (typeof folderHandler === 'function') {
-                folderHandler(folderName);
+            if (sBeforeFolderReadHandler(fileOrFolder)) {
+                fs.readdirSync(fileOrFolder).forEach(file => {
+                    scanFolderOrFile(resolve(fileOrFolder, file), options);
+                });
+                sAfterFolderReadHandler(fileOrFolder);
             }
-            fs.readdir(fileOrDir, function (err, files) {
-                if (err || !Array.isArray(files)) {
-                    return console.error('读取文件夹错误', err);
-                } else {
-                    files.forEach(file => {
-                        scanDir(join(fileOrDir, file), fileHandler, folderHandler);
-                    });
-                }
-            });
-        } else {
-            console.error('文件类型识别错误', stat, fileOrDir);
-        }
-    } else {
-        console.error('文件夹不存在！！！', dir);
-    }
-}
-
-// 删除文件夹
-function deleteFolderOrFile(fileOrDir) {
-    if (fs.existsSync(fileOrDir)) {
-        const stat = fs.statSync(fileOrDir);
-        if (stat.isFile()) {
-            fs.unlinkSync(fileOrDir);
-        } else if (stat.isDirectory()) {
-            fs.readdirSync(fileOrDir).forEach(file => {
-                deleteFolderOrFile(join(fileOrDir, file));
-            });
-            fs.rmdirSync(fileOrDir);
-        } else {
-            console.error('文件类型识别错误', stat, fileOrDir);
         }
     }
 }
 
-//读取文件夹
-const readDir = (dir, fileHandle) => scanDir(dir, fileHandle)
+// 删除目录/文件
+function deleteFolderOrFile(fileOrFolder) {
+    scanFolderOrFile(fileOrFolder, {
+        fileHandler: function (fileName) {
+            fs.unlinkSync(fileName);
+        },
+        afterFolderReadHandler: function (folder) {
+            fs.rmdirSync(folder);
+        }
+    });
+}
 
-//删除文件夹
-const deleteDir = dir => deleteFolderOrFile(dir)
+// 复制目录/文件
+function copyFolderOrFile(fromFolderOrFile, toFolderOrFile) {
+    scanFolderOrFile(fromFolderOrFile, {
+        fileHandler: function (fileName) {
+            const targetSrc = join(toFolderOrFile, fileName.replace(fromFolderOrFile, ''));
+            fs.copyFileSync(fileName, targetSrc);
+        },
+        beforeFolderReadHandler: function (folderName) {
+            const targetSrc = join(toFolderOrFile, folderName.replace(fromFolderOrFile, ''));
+            !fs.existsSync(targetSrc) && fs.mkdirSync(targetSrc, { recursive: true });
+            return true;
+        }
+    });
+}
 
 //创建文件的文件夹
 const createFileDir = function (fileName) {
@@ -86,7 +75,7 @@ const writeJson = function (fileName, jsonObj) {
             console.error(`写入${fileName}失败：`, err);
         }
     });
-}
+};
 
 // 写入ts文件
 const writeTsConfig = function (fileName, exportDict) {
@@ -120,7 +109,7 @@ const readJson = function (fileName) {
 // 读取文件
 const readFile = function (fileName) {
     return fs.readFileSync(fileName).toString();
-}
+};
 
 // 写入文件（普通文件）
 const writeFile = function (fileName, fileContent) {
@@ -131,13 +120,13 @@ const writeFile = function (fileName, fileContent) {
 };
 
 module.exports = {
-    readDir,
-    scanDir,
-    deleteDir,
+    scanFolderOrFile,
+    deleteFolderOrFile,
+    copyFolderOrFile,
     createFileDir,
     writeTsConfig,
     writeJson,
     readJson,
     writeFile,
     readFile
-}
+};

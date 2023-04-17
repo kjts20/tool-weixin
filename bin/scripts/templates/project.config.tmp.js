@@ -4,7 +4,7 @@ module.exports = {
         ignore: [],
         include: []
     },
-    miniprogramRoot: 'src/',
+    miniprogramRoot: 'miniprogram/',
     compileType: 'miniprogram',
     projectname: 'sskj-tmpl',
     setting: {
@@ -46,8 +46,8 @@ module.exports = {
     simulatorType: 'wechat',
     simulatorPluginLibVersion: {},
     condition: {},
-    srcMiniprogramRoot: 'src/',
-    appid: 'wx012ce8ab843b6995',
+    srcMiniprogramRoot: 'miniprogram/',
+    appid: 'appid',
     libVersion: '2.24.5',
     editorSetting: {
         tabIndent: 'insertSpaces',

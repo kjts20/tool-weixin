@@ -17,7 +17,7 @@ function getArgs(argsList) {
 // 数组生成目录
 function arr2Path(paths) {
     if (Array.isArray(paths)) {
-        return paths.join('/').replace(/\\/g, '/')
+        return paths.join('/').replace(/\\/g, '/');
     } else {
         return '';
     }
@@ -26,4 +26,4 @@ function arr2Path(paths) {
 module.exports = {
     getArgs: getArgs,
     arr2Path: arr2Path
-}
+};

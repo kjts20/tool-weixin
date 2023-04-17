@@ -37,47 +37,39 @@ const envPath = join(srcDir, 'config/env.ts');
 const allEnv = {
     // 生产
     prod: {
-        appid: 'wxf3741917bd1f1b79',
-        host: 'https://yicaipi.atemall.net',
-        capiPrefix: 'capi/',
-        mapiPrefix: 'mapi/',
+        appid: 'xxx',
+        host: 'https://xxx',
+        apiPrefix: 'api/',
         publicPrefix: 'public/',
-        imgHost: 'https://yicaipi.atemall.net',
-        getMessageInterval: 5 * 1000,
-        printStatus: true
+        imgHost: 'https://xxx',
+        getMessageInterval: 5 * 1000
     },
     // 预发
     pre: {
-        appid: 'wx012ce8ab843b6995',
-        host: 'https://yicaipi-pre.ts20.cn',
-        capiPrefix: 'capi/',
-        mapiPrefix: 'mapi/',
+        appid: 'xxx',
+        host: 'https://xxx',
+        apiPrefix: 'api/',
         publicPrefix: 'public/',
-        imgHost: 'https://yicaipi-pre.ts20.cn',
-        getMessageInterval: 5 * 1000,
-        printStatus: false
+        imgHost: 'https://xxx',
+        getMessageInterval: 5 * 1000
     },
     // 开发
     dev: {
-        appid: 'wx673b3bf4f08e063d',
-        host: 'https://yicaipi.ts20.cn',
-        capiPrefix: 'capi/',
-        mapiPrefix: 'mapi/',
+        appid: 'xxx',
+        host: 'https://xxx',
+        apiPrefix: 'api/',
         publicPrefix: 'public/',
-        imgHost: 'https://yicaipi.ts20.cn',
-        getMessageInterval: 10 * 1000,
-        printStatus: true
+        imgHost: 'https://xxx',
+        getMessageInterval: 15 * 1000
     },
     // 测试
     test: {
-        appid: 'wx673b3bf4f08e063d',
-        host: 'http://localhost:8092',
-        capiPrefix: '',
-        mapiPrefix: '',
+        appid: 'xxx',
+        host: 'https://xxx',
+        apiPrefix: 'api/',
         publicPrefix: 'public/',
-        imgHost: 'https://yicaipi.ts20.cn',
-        getMessageInterval: 25 * 1000,
-        printStatus: false
+        imgHost: 'https://xxx',
+        getMessageInterval: 30 * 1000
     }
 };
 
