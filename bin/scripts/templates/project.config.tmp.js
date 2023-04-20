@@ -26,7 +26,7 @@ module.exports = {
         packNpmRelationList: [
             {
                 packageJsonPath: './package.json',
-                miniprogramNpmDistDir: './src/'
+                miniprogramNpmDistDir: './miniprogram/'
             }
         ],
         minifyWXSS: true,

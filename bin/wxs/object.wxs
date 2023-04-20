@@ -19,7 +19,7 @@ var column = function (sourceData, keys, defaultValue = '-') {
             return defaultValue;
         }
     }
-    return type.isUndefined(tmpData) ? defaultValue : defaultValue;
+    return type.isUndefined(tmpData) ? defaultValue : tmpData;
 };
 
 // 字符串拼接
@@ -83,7 +83,7 @@ var list2Dict = function (arr, keyGenerator) {
             obj[keyGenerator(item)] = item;
         });
     } else {
-        console.error('生成可以方法不正确=>', keyGenerator);
+        console.log('生成可以方法不正确=>', keyGenerator);
     }
     return obj;
 };

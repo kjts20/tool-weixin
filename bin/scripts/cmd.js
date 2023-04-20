@@ -1,4 +1,4 @@
-const { writeProjectConfig, readProjectConfig, allEnv, readAppJson, writeAppJson } = require('./common');
+const { writeProjectConfig, readProjectConfig, writeTsConfigJson, allEnv, readAppJson, writeAppJson } = require('./common');
 
 /**
  * 环境修改
@@ -29,7 +29,7 @@ const changeEnv = function (envStr) {
 };
 
 // 启动环境
-(function (typeStr, envStr) {
+(function (typeStr, args2) {
     //获取命令参数
     const typeRe = /^type=(.*?)$/;
     if (typeRe.test(typeStr)) {
@@ -39,10 +39,17 @@ const changeEnv = function (envStr) {
                 writeAppJson(readAppJson());
                 break;
             case 'project':
-                writeProjectConfig(require('./templates/project.config.tmp'), allEnv.dev);
+                // 项目配置文件书写
+                const projectTmpJson = require('./templates/project.config.tmp');
+                const rootDir = args2 || 'miniprogram';
+                writeProjectConfig(projectTmpJson, allEnv.dev, rootDir);
+                // 生成tsconfig.ts
+                writeTsConfigJson(require('./templates/tsconfig.tmp'), rootDir);
+                // 删除根目录typings文件
+                deleteFolderOrFile('./typings');
                 break;
             case 'changeEnv':
-                changeEnv(envStr);
+                changeEnv(args2);
                 break;
             default:
                 console.error('无法识别的类型：', type);

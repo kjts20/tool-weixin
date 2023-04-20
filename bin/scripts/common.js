@@ -2,6 +2,11 @@ const fs = require('fs');
 const { join } = require('path');
 const { writeJson, writeTsConfig, createFileDir, readJson } = require('./utils/file');
 
+// project.config.json
+const projectConfigFilePath = './project.config.json';
+// tsconfig.json
+const tsconfigJsonPath = './tsconfig.json';
+
 //获取ts配置
 const tsConfig = (function (tsconfigFile) {
     if (fs.existsSync(tsconfigFile)) {
@@ -12,7 +17,7 @@ const tsConfig = (function (tsconfigFile) {
         }
     }
     return null;
-})('./tsconfig.json');
+})(tsconfigJsonPath);
 
 // ts配置文件
 if (typeof tsConfig !== 'object' || tsConfig === null) {
@@ -28,8 +33,7 @@ const routerPath = join(srcDir, 'config/route.ts');
 const tabbarPath = join(srcDir, 'config/tabbar.ts');
 // app.json目录
 const appJsonPath = join(srcDir, 'app.json');
-// project.config.json
-const projectConfigFilePath = './project.config.json';
+
 // 环境配置文件
 const envPath = join(srcDir, 'config/env.ts');
 
@@ -79,7 +83,17 @@ const readProjectConfig = function () {
 };
 
 // 写入project.config.json文件
-const writeProjectConfig = function (fileContent, envIt) {
+const writeProjectConfig = function (fileContent, envIt, rootDir) {
+    // 写入根目录
+    if (rootDir) {
+        fileContent.miniprogramRoot = rootDir;
+        fileContent.setting.packNpmRelationList.forEach(it => {
+            it.miniprogramNpmDistDir = `./${rootDir}/`;
+        });
+        fileContent.srcMiniprogramRoot = `${rootDir}/`;
+        writeJson(projectConfigFilePath, fileContent);
+    }
+    // 写入环境信息
     if (typeof envIt === 'object' && envIt !== null) {
         fileContent.appid = envIt.appid;
         writeJson(projectConfigFilePath, fileContent);
@@ -87,6 +101,17 @@ const writeProjectConfig = function (fileContent, envIt) {
     } else {
         console.error('环境变量获取失败：', envIt);
     }
+};
+
+// 写入tsconfig.json文件
+const writeTsConfigJson = function (fileContent, rootDir) {
+    fileContent.srcDir = rootDir;
+    fileContent.outDir = rootDir;
+    fileContent.compilerOptions.paths = {
+        '@/*': [rootDir + '/*']
+    };
+    fileContent.include = [rootDir + '/**/*.ts'];
+    writeJson(tsconfigJsonPath, fileContent);
 };
 
 // 生成路由
@@ -149,6 +174,7 @@ const toRoutes = function (appJson) {
 
 // 写入路由
 const writeRoutes = function (appJson) {
+    createFileDir(routerPath);
     writeTsConfig(routerPath, {
         routes: toRoutes(appJson)
     });
@@ -157,6 +183,7 @@ const writeRoutes = function (appJson) {
 // 写入tabbar页面
 const writeTabbar = function (appJson) {
     if (typeof appJson === 'object' && appJson !== null && appJson.tabBar) {
+        createFileDir(tabbarPath);
         writeTsConfig(tabbarPath, {
             tabBar: appJson.tabBar
         });
@@ -187,6 +214,7 @@ module.exports = {
     allEnv,
     readProjectConfig,
     writeProjectConfig,
+    writeTsConfigJson,
     updateRoutes,
     readAppJson,
     writeAppJson

@@ -1,4 +1,4 @@
-import { HttpResponse, HttpServer, isStr } from '@kjts20/tool';
+import { HttpResponse, HttpServer, firstUpperCase, isStr } from '@kjts20/tool';
 import { getToken } from './services/auth';
 
 export const httpServer = new HttpServer({

@@ -36,7 +36,7 @@ var toPercent = function (all, val, digit = 0) {
     if (type.isNum(val) && type.isNum(all)) {
         return ((val / all) * 100).toFixed(_digit);
     } else {
-        console.error('总数/数据必须是数字=>', all, val);
+        console.log('总数/数据必须是数字=>', all, val);
         return (0).toFixed(_digit);
     }
 };
