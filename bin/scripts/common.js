@@ -6,6 +6,8 @@ const { writeJson, writeTsConfig, createFileDir, readJson } = require('./utils/f
 const projectConfigFilePath = './project.config.json';
 // tsconfig.json
 const tsconfigJsonPath = './tsconfig.json';
+// 默认项目名称
+const defaultProjectName = 'miniprogram';
 
 //获取ts配置
 const tsConfig = (function (tsconfigFile) {
@@ -16,7 +18,7 @@ const tsConfig = (function (tsconfigFile) {
             console.error('tsConfig文件：' + tsconfigFile + '读取错误=>', err);
         }
     }
-    return null;
+    return { srcDir: defaultProjectName, outDir: defaultProjectName };
 })(tsconfigJsonPath);
 
 // ts配置文件
@@ -210,6 +212,7 @@ const writeAppJson = function (fileContent) {
 module.exports = {
     srcDir,
     outDir,
+    defaultProjectName,
     createFileDir,
     allEnv,
     readProjectConfig,

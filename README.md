@@ -33,6 +33,12 @@ httpServer.get('/url', { id: 5 });
 
 执行指令：
 
+### 前序说明
+
+#### 下载依赖
+
+-   `npm install @kjts20/tool`
+
 ### 小程序初始化操作
 
 #### 一、本地化 wxs 与脚手架

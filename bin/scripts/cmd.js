@@ -1,4 +1,4 @@
-const { writeProjectConfig, readProjectConfig, writeTsConfigJson, allEnv, readAppJson, writeAppJson } = require('./common');
+const { writeProjectConfig, readProjectConfig, writeTsConfigJson, allEnv, readAppJson, writeAppJson, defaultProjectName } = require('./common');
 
 /**
  * 环境修改
@@ -41,7 +41,7 @@ const changeEnv = function (envStr) {
             case 'project':
                 // 项目配置文件书写
                 const projectTmpJson = require('./templates/project.config.tmp');
-                const rootDir = args2 || 'miniprogram';
+                const rootDir = args2 || defaultProjectName;
                 writeProjectConfig(projectTmpJson, allEnv.dev, rootDir);
                 // 生成tsconfig.ts
                 writeTsConfigJson(require('./templates/tsconfig.tmp'), rootDir);
