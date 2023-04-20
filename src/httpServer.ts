@@ -17,9 +17,16 @@ export const httpServer = new HttpServer({
     uploadFile: wx.request,
     responseIntercept: (response: HttpResponse) => response
 });
+
 export const get: HttpServer['get'] = (...args) => httpServer.get(...args);
 export const post: HttpServer['post'] = (...args) => httpServer.post(...args);
 export const postJson: HttpServer['postJson'] = (...args) => httpServer.postJson(...args);
 export const put: HttpServer['put'] = (...args) => httpServer.put(...args);
 export const del: HttpServer['del'] = (...args) => httpServer.del(...args);
 export const upload: HttpServer['upload'] = (...args) => httpServer.upload(...args);
+
+// 初始化请求
+export const initHttpServer = function (host) {
+    httpServer.host = host;
+    return httpServer;
+};

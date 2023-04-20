@@ -43,10 +43,28 @@ const changeEnv = function (envStr) {
                 const projectTmpJson = require('./templates/project.config.tmp');
                 const rootDir = args2 || defaultProjectName;
                 writeProjectConfig(projectTmpJson, allEnv.dev, rootDir);
+
                 // 生成tsconfig.ts
                 writeTsConfigJson(require('./templates/tsconfig.tmp'), rootDir);
+
                 // 删除根目录typings文件
                 deleteFolderOrFile('./typings');
+
+                // 写入基础别名
+                const appJson = readAppJson();
+                if (!appJson.useExtendedLib?.weui) {
+                    appJson.useExtendedLib.weui = true;
+                }
+                if (!appJson.resolveAlias['@/*']) {
+                    appJson.resolveAlias['@/*'] = '/*';
+                }
+                if (!appJson.resolveAlias['@kjts20/tool/*']) {
+                    appJson.resolveAlias['@kjts20/tool/*'] = 'miniprogram_npm/@kjts20/tool/*';
+                }
+                if (!appJson.resolveAlias['@kjts20/tool-weixin-mp/*']) {
+                    appJson.resolveAlias['@kjts20/tool-weixin-mp/*'] = 'miniprogram_npm/@kjts20/tool-weixin-mp/*';
+                }
+                writeAppJson(appJson);
                 break;
             case 'changeEnv':
                 changeEnv(args2);
