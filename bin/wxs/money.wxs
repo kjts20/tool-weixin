@@ -1,7 +1,7 @@
 // 分 -> 元
 var fee2yuan = function (fee, decimal = 2) {
     var totalFee = parseInt(fee) || 0;
-    var prefix = Math.abs(totalFee) === totalFee ? '-' : '';
+    var prefix = Math.abs(totalFee) === totalFee ? '' : '-';
     var yuanStr = (Math.abs(totalFee) / 100).toFixed(decimal);
     var replaceRe = getRegExp('(\\d)(?=(\\d{3})+\\.)', 'g');
     return prefix + yuanStr.replace(replaceRe, '$1,');
