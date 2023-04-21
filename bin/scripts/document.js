@@ -1,5 +1,5 @@
 const { projectBaseUrl, swaggerApiList } = require('./config/document');
-const { writeJson, lineTag, tabTag, createFileDir, writeFile } = require('./utils/file');
+const { writeJson, lineTag, tabTag, createFileDir, writeFile, writeTsConfig } = require('./utils/file');
 const { get } = require('./utils/request');
 const { list2dict, listGroupBy, dict2List } = require('./utils/object');
 const { firstLowerCase } = require('./utils/string');
@@ -352,22 +352,49 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
         writeFile(`${saveRoot}/${fileName}.ts`, toRequestFileTmpl(requestFileDict[fileName]));
     }
 };
+
+/**
+ * 写入设置文件
+ * @param {文件名称} fileName
+ * @param {选择器实体名称} selectorOptionBeanList
+ */
+const writeSettingFile = function (fileName, selectorOptionBeanList) {
+    const toItemTmpl = function (item) {
+        return [
+            ,
+            `// ${item.description}`,
+            `const ${item.name} = ${JSON.stringify(item.values, null, 4)};`,
+            `const ${item.name}ValDict = ${JSON.stringify(
+                list2dict(item.values, it => it.value),
+                null,
+                4
+            )};`,
+            `const ${item.name}KeyDict = ${JSON.stringify(
+                list2dict(item.values, it => it.key),
+                null,
+                4
+            )};`
+        ].join(lineTag);
+    };
+    writeFile(fileName, selectorOptionBeanList.map(it => toItemTmpl(it)).join(lineTag));
+};
+
 /**
  * 生成类型与请求列表
  */
-const generateTypesAndServiceList = async function () {
+const generateTypesAndServiceList = async function (projectRoot = 'miniprogram') {
     // 获取项目基础信息
     const { data: projectSetting } = await get(projectBaseUrl);
     const { selectorOptionBeanList, beanGenericityList, selectorMapperItemList } = projectSetting;
     const typeAndServiceTypeList = [];
-    const typeRoot = 'types';
-    const serviceRoot = 'services';
+    const typeRoot = `types`;
+    const serviceRoot = `services`;
     // 类型与服务列表
     for (const apiInfo of swaggerApiList) {
         const document = await get(apiInfo.docUrl);
         if (!document) {
             console.error('文档找不到=>', apiInfo);
-            continue;
+            throw new Error('请到cli/config/document.js中验证文档地址、项目配置地址！！！');
         }
         const { tags, paths, definitions } = document;
         // 生成类型数据
@@ -383,14 +410,21 @@ const generateTypesAndServiceList = async function () {
         // 写入类型文件
         const typeDecrption = ['/*', ' * @author: sskj-generator', ` * @description: ${apiInfo.description}`, ` * @url: ${apiInfo.docUrl}`, ' */'].join(lineTag);
         const typeFileName = `${typeRoot}/${apiInfo.name}`;
-        writeTypeFile(`${typeFileName}.ts`, typeDecrption, typeList);
+        writeTypeFile(`${projectRoot}/${typeFileName}.ts`, typeDecrption, typeList);
         // 写入请求文件
-        const serviceBaseFileName = `${serviceRoot}/${apiInfo.name}`;
+        const serviceBaseFileName = `${projectRoot}/${serviceRoot}/${apiInfo.name}`;
         writeReqestFile(serviceBaseFileName, `../../${typeFileName}`, serviceList);
     }
-
-    // 写入文件
-    writeJson('test.json', typeAndServiceTypeList);
+    // 写入枚举文件
+    const settingRoot = `config`;
+    writeSettingFile(`${projectRoot}/${settingRoot}/settings.ts`, selectorOptionBeanList);
 };
 
-generateTypesAndServiceList();
+(function (rootDir) {
+    // 生成类型、服务列表
+    try {
+        generateTypesAndServiceList(rootDir);
+    } catch (e) {
+        console.error('基础信息、文档信息写入错误：', e.message || e);
+    }
+})(process.argv[3]);

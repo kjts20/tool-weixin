@@ -75,8 +75,11 @@ initHttpServer(host);
 
 #### 九、配置 cli/common.js 中的 swaggerApi 字段，设置文档路径与基础信息获取接口
 
-```
+-   修改./package.json 的 scripts 中的 document 指令，把 miniprogram 修改为自定义项目名称
+-   修改 ./cli/config/document.js 文件，修改文档组路径信息、系统基础信息的 url
 
+```shell
+npm run document
 ```
 
 ### 注意事项
