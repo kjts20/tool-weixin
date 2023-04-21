@@ -47,6 +47,7 @@ const { join } = require('path');
         const allScripts = {
             route: 'node cli/cmd.js type=route',
             initapp: 'node cli/cmd.js type=initapp',
+            document: 'node cli/document.js',
             project: 'node cli/cmd.js type=project miniprogram',
             'env:prod': 'node cli/cmd.js type=changeEnv env=prod',
             'env:pre': 'node cli/cmd.js type=changeEnv env=pre',

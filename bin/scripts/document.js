@@ -150,16 +150,16 @@ const typeDecorate = function (typeList, selectorMapperList, selectorOptionList)
 const writeTypeFile = function (fileName, description, typeList) {
     // 类型属性模板
     const toTypeAttrTmpl = function (attr) {
-        return [`${tabTag}// ${attr.description}`, `${tabTag}${attr.name}${attr.required ? '' : '?'}: ${attr.type}`].join(lineTag);
+        return [`${tabTag}// ${attr.description || attr.name}`, `${tabTag}${attr.name}${attr.required ? '' : '?'}: ${attr.type}`].join(lineTag);
     };
     // 类型模板
     const toTypeTmpl = function (typeIt) {
         const nameAndType = `${typeIt.name}${typeIt.useGenericityList.length > 0 ? `<${typeIt.useGenericityList.map(it => `${it}=any`).join(',')}>` : ''}`;
         const properties = `${typeIt.properties.map(it => toTypeAttrTmpl(it)).join(lineTag)}`;
-        return [, `// ${typeIt.description}`, `export interface ${nameAndType} {`, properties, '}'].join(lineTag);
+        return [, `// ${typeIt.description || typeIt.name}`, `export interface ${nameAndType} {`, properties, '}'].join(lineTag);
     };
     // 写入文件
-    writeFile(fileName, [`${description}`, typeList.map(it => toTypeTmpl(it)).join(lineTag)].join(lineTag));
+    writeFile(fileName, [`${description || '类型文件'}`, typeList.map(it => toTypeTmpl(it)).join(lineTag)].join(lineTag));
 };
 
 /**
