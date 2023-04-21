@@ -195,7 +195,7 @@ const toRequestList = function (tags, paths) {
                         if (parameters.filter(it => it.in === 'body').length > 0) {
                             return 'postJson';
                         } else if (parameters.filter(it => it.in === 'formData').length > 0) {
-                            return 'file';
+                            return 'upload';
                         } else {
                             return 'post';
                         }
@@ -303,12 +303,16 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
             dataStr = body ? `, ${body.name}` : '';
         } else {
             dataStr = queryParams.length > 0 ? `, {${queryParams.map(it => it.name).join(', ')}}` : '';
+            if (requestItem.type === 'upload') {
+                const fileName = requestItem.params.find(it => it.in === 'formData' && it.type === 'File').name;
+                dataStr = `, ${fileName || null}${dataStr}`;
+            }
         }
         return [
             ,
             `/*`,
             ` * ${requestItem.description}`,
-            requestItem.params.map(it => ` * @param {${it.description}} ${it.name}`).join(lineTag),
+            requestItem.params.map(it => ` * @param {${it.description || '*'}} ${it.name}`).join(lineTag),
             ' */',
             `export const ${requestItem.name} = function(${paramsStr}):Promise<HttpResponse<${requestItem.response || 'any'}>>{`,
             `${tabTag}return httpServer.${requestItem.type}(${urlStr}${dataStr});`,
