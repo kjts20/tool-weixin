@@ -13,7 +13,8 @@ const type2tsDict = {
     integer: 'number',
     string: 'string',
     boolean: 'boolean',
-    file: 'File'
+    file: 'File',
+    Map: 'object'
 };
 
 /**
@@ -264,7 +265,9 @@ const toRequestList = function (tags, paths) {
                 response: (function (schema) {
                     if (schema) {
                         if (schema.originalRef) {
-                            return toUseKey(schema.originalRef).replace(/List<(.*?)>/g, 'Array<$1>');
+                            return toUseKey(schema.originalRef)
+                                .replace(/List<(.*?)>/g, 'Array<$1>')
+                                .replace('Map', 'object');
                         } else if (schema.type) {
                             return type2tsDict[schema.type] || 'any';
                         } else {
@@ -291,7 +294,11 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
     // 生成请求子项模板
     const toRequestItemTmpl = function (requestItem) {
         // 形参字符串
-        const paramsStr = requestItem.params.map(it => `${it.name}${it.required ? '' : '?'}:${it.type || 'any'}`).join(', ');
+        const paramsStr = (function (params) {
+            const requiredParams = params.filter(it => it.required);
+            const otherParams = params.filter(it => !it.required);
+            return [...requiredParams, ...otherParams].map(it => `${it.name}${it.required ? '' : '?'}:${it.type || 'any'}`).join(', ');
+        })(requestItem.params);
         // 请求的url与数据
         const queryParams = requestItem.params.filter(it => it.in === 'query');
         const url = `'${requestItem.requestUrl}'`;
@@ -308,13 +315,14 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
                 dataStr = `, ${fileName || null}${dataStr}`;
             }
         }
+        const responseType = (requestItem.response || 'any').replace('BaseResponse', 'HttpResponse');
         return [
             ,
             `/*`,
             ` * ${requestItem.description}`,
             requestItem.params.map(it => ` * @param {${it.description || '*'}} ${it.name}`).join(lineTag),
             ' */',
-            `export const ${requestItem.name} = function(${paramsStr}):Promise<HttpResponse<${requestItem.response || 'any'}>>{`,
+            `export const ${requestItem.name} = function(${paramsStr}):Promise<${responseType}>{`,
             `${tabTag}return httpServer.${requestItem.type}(${urlStr}${dataStr});`,
             '};'
         ]
@@ -326,7 +334,7 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
         // 提取使用的类型
         const useTypeList = (function () {
             const typeList = [];
-            const baseTypeList = ['number', 'string', 'boolean', 'Array', '[]', 'any', 'object', 'File'];
+            const baseTypeList = ['number', 'string', 'boolean', 'Array', '[]', 'any', 'object', 'File', 'BaseResponse'];
             const parseType = function (typeStr) {
                 // 前面添加<，处理成泛型进行替换处理
                 return ('<' + typeStr).replace(/<([^<^>^,]*)/g, ($0, $1) => {
