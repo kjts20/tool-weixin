@@ -1,11 +1,13 @@
-var type = require('./type.wxs');
+// prettier-ignore
+var type = require("./type.wxs");
 
 // 前后去空格
-var trim = function (str, patternStr, replaceStr) {
+// prettier-ignore
+var trim = function (str,  patternStr, replaceStr) {
     if (typeof str === 'string') {
         // 空值时候给默认值
         if (!type.isStr(patternStr) || patternStr.replace(getRegExp('s+'), '') === '') {
-            patternStr = '\\s';
+			patternStr = '\s';
         }
         // 默认替换为空
         if (!replaceStr) {
@@ -39,7 +41,7 @@ var toUpperCase = function (str) {
 // 首字母大写
 var firstUpperCase = function (str) {
     if (type.isStr(str)) {
-        return (str[0] || '').toUpperCase();
+        return (str[0] || '').toUpperCase() + str.slice(1);
     } else {
         return str;
     }
@@ -48,7 +50,7 @@ var firstUpperCase = function (str) {
 // 首字母小写
 var firstLowerCase = function (str) {
     if (type.isStr(str)) {
-        return (str[0] || '').toLowerCase();
+        return (str[0] || '').toLowerCase() + str.slice(1);
     } else {
         return str;
     }
@@ -81,11 +83,14 @@ var toString = function (obj) {
  * @returns 字符串
  */
 var concat = function () {
-    return arguments
-        .filter(function (item) {
-            return !type.isUndefined(item);
-        })
-        .join('');
+    var args = [];
+    for (var i = 0; i < arguments.length; i++) {
+        var item = arguments[i];
+        if (!type.isUndefined(item)) {
+            args.push(item);
+        }
+    }
+    return args.join('');
 };
 
 module.exports = {

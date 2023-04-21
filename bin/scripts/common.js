@@ -88,7 +88,6 @@ const writeProjectConfig = function (fileContent, envIt, rootDir) {
             it.miniprogramNpmDistDir = `./${rootDir}/`;
         });
         fileContent.srcMiniprogramRoot = `${rootDir}/`;
-        writeJson(projectConfigFilePath, fileContent);
     }
     // 写入环境信息
     if (typeof envIt === 'object' && envIt !== null) {
@@ -96,7 +95,11 @@ const writeProjectConfig = function (fileContent, envIt, rootDir) {
         writeJson(projectConfigFilePath, fileContent);
         writeTsConfig(envPath, envIt);
     } else {
-        console.error('环境变量获取失败：', envIt);
+        if (rootDir) {
+            writeJson(projectConfigFilePath, fileContent);
+        } else {
+            console.error('环境变量获取失败：', envIt);
+        }
     }
 };
 
