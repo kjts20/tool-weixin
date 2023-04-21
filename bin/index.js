@@ -46,12 +46,13 @@ const { join } = require('path');
         }
         const allScripts = {
             route: 'node cli/cmd.js type=route',
+            initapp: 'node cli/cmd.js type=initapp',
             project: 'node cli/cmd.js type=project miniprogram',
             'env:prod': 'node cli/cmd.js type=changeEnv env=prod',
             'env:pre': 'node cli/cmd.js type=changeEnv env=pre',
             'env:dev': 'node cli/cmd.js type=changeEnv env=dev',
             'env:test': 'node cli/cmd.js type=changeEnv env=test',
-            initp: 'npm i && npm run project'
+            initp: 'npm i && npm run project &&  npm run initapp'
         };
         for (const key in allScripts) {
             packageJson.scripts[key] = allScripts[key];

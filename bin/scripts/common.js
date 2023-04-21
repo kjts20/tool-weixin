@@ -1,6 +1,6 @@
 const fs = require('fs');
 const { join } = require('path');
-const { writeJson, writeTsConfig, createFileDir, readJson } = require('./utils/file');
+const { writeJson, writeTsConfig, createFileDir, readJson, deleteFolderOrFile } = require('./utils/file');
 
 // project.config.json
 const projectConfigFilePath = './project.config.json';
@@ -18,7 +18,7 @@ const tsConfig = (function (tsconfigFile) {
             console.error('tsConfig文件：' + tsconfigFile + '读取错误=>', err);
         }
     }
-    return { srcDir: defaultProjectName, outDir: defaultProjectName };
+    return null;
 })(tsconfigJsonPath);
 
 // ts配置文件
@@ -27,7 +27,7 @@ if (typeof tsConfig !== 'object' || tsConfig === null) {
 }
 
 // 使用的src目录
-const { outDir, srcDir } = tsConfig;
+const { outDir = defaultProjectName, srcDir = defaultProjectName } = tsConfig || {};
 
 // 路由目录
 const routerPath = join(srcDir, 'config/route.ts');
@@ -212,6 +212,7 @@ const writeAppJson = function (fileContent) {
 module.exports = {
     srcDir,
     outDir,
+    tsconfigJsonPath,
     defaultProjectName,
     createFileDir,
     allEnv,

@@ -43,7 +43,7 @@ npm install @kjts20/tool-weixin-mp
 
 #### 四、初始化项目(生成项目配置文件、tsconfig.json)
 
--   `npm run project`
+-   `npm run initp`
 
 #### 五、构建 npm
 

@@ -1,4 +1,5 @@
 const { writeProjectConfig, readProjectConfig, writeTsConfigJson, allEnv, readAppJson, writeAppJson, defaultProjectName } = require('./common');
+const { deleteFolderOrFile } = require('./utils/file');
 
 /**
  * 环境修改
@@ -49,12 +50,15 @@ const changeEnv = function (envStr) {
 
                 // 删除根目录typings文件
                 deleteFolderOrFile('./typings');
-
+                break;
+            case 'initapp':
                 // 写入基础别名
                 const appJson = readAppJson();
+                !appJson.useExtendedLib && (appJson.useExtendedLib = {});
                 if (!appJson.useExtendedLib?.weui) {
                     appJson.useExtendedLib.weui = true;
                 }
+                !appJson.resolveAlias && (appJson.resolveAlias = {});
                 if (!appJson.resolveAlias['@/*']) {
                     appJson.resolveAlias['@/*'] = '/*';
                 }

@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { join } = require('path');
 const { writeAppJson, readAppJson, srcDir, createFileDir } = require('./common');
-const { getArgs, arr2Path } = require('./utils/tools.utils');
+const { getArgs, arr2Path } = require('./utils/tools');
 
 // 获取命令参数
 const argsList = process.argv;
