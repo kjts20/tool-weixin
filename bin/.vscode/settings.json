@@ -2,31 +2,36 @@
     "less.compile": {
         "outExt": false
     },
-    "easysass.compileAfterSave": true,
-    "easysass.formats": [
-        {
-            "format": "compressed",
-            "extension": ".wxss"
-        }
-    ],
+    "easysass.compileAfterSave": false,
+    "easysass.formats": [{
+        "format1": "compressed",
+        "format": "expanded",
+        "extension": ".wxss"
+    }],
     "editor.formatOnSave": true,
-    "editor.detectIndentation": false,
-    "javascript.format.enable": false,
-    "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": true
-    },
-    "editor.formatOnPaste": false,
-    "editor.formatOnType": true,
-    "files.autoSave": "onFocusChange",
-    "eslint.nodePath": "",
-    "files.trimTrailingWhitespace": true,
-    "[typescript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
+    "editor.tabSize": 4,
+    "editor.rulers": [250],
+    "html.format.wrapAttributes": "force-aligned",
+    "wxml.format.wrapAttributes": "auto",
+    "wxml.format.wrapAttributes": "preserve-aligned",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "[javascript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+        "editor.defaultFormatter": "HookyQR.beautify"
     },
-    "[typescriptreact]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "[json]": {
+        "editor.defaultFormatter": "HookyQR.beautify"
+    },
+    "editor.detectIndentation": false,
+    "[scss]": {
+        "editor.defaultFormatter": "HookyQR.beautify"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    },
+    "[css]": {
+        "editor.defaultFormatter": "HookyQR.beautify"
+    },
+    "[wxml]": {
+        "editor.defaultFormatter": "wechat.miniprogram.wxml-language-features"
     }
 }
