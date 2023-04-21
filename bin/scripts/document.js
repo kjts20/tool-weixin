@@ -195,7 +195,7 @@ const toRequestList = function (tags, paths) {
                         if (parameters.filter(it => it.in === 'body').length > 0) {
                             return 'postJson';
                         } else if (parameters.filter(it => it.in === 'formData').length > 0) {
-                            return 'upload';
+                            return 'file';
                         } else {
                             return 'post';
                         }
@@ -203,7 +203,11 @@ const toRequestList = function (tags, paths) {
                         return 'post';
                     }
                 } else {
-                    return method.toLowerCase();
+                    if (method === 'delete') {
+                        return 'del';
+                    } else {
+                        return method.toLowerCase();
+                    }
                 }
             })();
             const response = responses['200'];
@@ -286,11 +290,20 @@ const toRequestList = function (tags, paths) {
 const writeReqestFile = function (saveRoot, typeFile, requestList) {
     // 生成请求子项模板
     const toRequestItemTmpl = function (requestItem) {
+        // 形参字符串
+        const paramsStr = requestItem.params.map(it => `${it.name}${it.required ? '' : '?'}:${it.type || 'any'}`).join(', ');
+        // 请求的url与数据
         const queryParams = requestItem.params.filter(it => it.in === 'query');
         const url = `'${requestItem.requestUrl}'`;
-        const urlStr = queryParams.length > 0 ? `mergeUrl(${url}, {${queryParams.map(it => it.name).join(',')}})` : url;
-        const data = requestItem.params.find(it => it.in === 'body');
-        const paramsStr = requestItem.params.map(it => `${it.name}${it.required ? '' : '?'}:${it.type || 'any'}`).join(', ');
+        let urlStr = url;
+        let dataStr = '';
+        if (requestItem.type === 'postJson') {
+            urlStr = queryParams.length > 0 ? `mergeUrl(${url}, {${queryParams.map(it => it.name).join(',')}})` : url;
+            const body = requestItem.params.find(it => it.in === 'body');
+            dataStr = body ? `, ${body.name}` : '';
+        } else {
+            dataStr = queryParams.length > 0 ? `, {${queryParams.map(it => it.name).join(', ')}}` : '';
+        }
         return [
             ,
             `/*`,
@@ -298,7 +311,7 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
             requestItem.params.map(it => ` * @param {${it.description}} ${it.name}`).join(lineTag),
             ' */',
             `export const ${requestItem.name} = function(${paramsStr}):Promise<HttpResponse<${requestItem.response || 'any'}>>{`,
-            `${tabTag}return httpServer.${requestItem.type}(${urlStr}${data ? `,${data.name}` : ''});`,
+            `${tabTag}return httpServer.${requestItem.type}(${urlStr}${dataStr});`,
             '};'
         ]
             .filter(it => it)
