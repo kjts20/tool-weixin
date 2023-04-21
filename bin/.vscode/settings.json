@@ -3,33 +3,41 @@
         "outExt": false
     },
     "easysass.compileAfterSave": false,
-    "easysass.formats": [{
-        "format1": "compressed",
-        "format": "expanded",
-        "extension": ".wxss"
-    }],
-    "editor.formatOnSave": true,
+    "easysass.formats": [
+        {
+            "format1": "compressed",
+            "format": "expanded",
+            "extension": ".wxss"
+        }
+    ],
     "editor.tabSize": 4,
-    "editor.rulers": [250],
+    "editor.rulers": [200],
+    "editor.formatOnSave": true,
     "html.format.wrapAttributes": "force-aligned",
     "wxml.format.wrapAttributes": "auto",
     "wxml.format.wrapAttributes": "preserve-aligned",
     "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "prettier.trailingComma": "none",
+    "prettier.semi": true,
+    "prettier.tabWidth": 4,
+    "prettier.printWidth": 200,
+    "prettier.jsxSingleQuote": true,
+    "prettier.singleQuote": true,
     "[javascript]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features"
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[json]": {
-        "editor.defaultFormatter": "HookyQR.beautify"
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "editor.detectIndentation": false,
     "[scss]": {
-        "editor.defaultFormatter": "HookyQR.beautify"
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[typescript]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features"
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[css]": {
-        "editor.defaultFormatter": "HookyQR.beautify"
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[wxml]": {
         "editor.defaultFormatter": "wechat.miniprogram.wxml-language-features"
