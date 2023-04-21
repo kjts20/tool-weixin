@@ -91,7 +91,7 @@ const createFileDir = function (fileName) {
  * @param {文件对象} jsonObj
  */
 const writeJson = function (fileName, jsonObj) {
-    fs.writeFile(fileName, JSON.stringify(jsonObj, null, '\t'), err => {
+    fs.writeFile(fileName, JSON.stringify(jsonObj, null, 4), err => {
         if (!err) {
             console.log(`写入${fileName}成功`);
         } else {

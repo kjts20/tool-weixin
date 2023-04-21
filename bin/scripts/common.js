@@ -21,11 +21,6 @@ const tsConfig = (function (tsconfigFile) {
     return null;
 })(tsconfigJsonPath);
 
-// ts配置文件
-if (typeof tsConfig !== 'object' || tsConfig === null) {
-    throw new Error('ts配置文件没有找到');
-}
-
 // 使用的src目录
 const { outDir = defaultProjectName, srcDir = defaultProjectName } = tsConfig || {};
 
