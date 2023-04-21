@@ -16,7 +16,7 @@
     "wxml.format.wrapAttributes": "preserve-aligned",
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "[javascript]": {
-        "editor.defaultFormatter": "HookyQR.beautify"
+        "editor.defaultFormatter": "vscode.typescript-language-features"
     },
     "[json]": {
         "editor.defaultFormatter": "HookyQR.beautify"
