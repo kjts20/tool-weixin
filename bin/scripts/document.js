@@ -300,7 +300,9 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
             `export const ${requestItem.name} = function(${paramsStr}):Promise<HttpResponse<${requestItem.response || 'any'}>>{`,
             `${tabTag}return httpServer.${requestItem.type}(${urlStr}${data ? `,${data.name}` : ''});`,
             '};'
-        ].join(lineTag);
+        ]
+            .filter(it => it)
+            .join(lineTag);
     };
     // 生成请求文件模板
     const toRequestFileTmpl = function (requestList) {
