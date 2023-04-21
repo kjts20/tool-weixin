@@ -297,7 +297,7 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
         const url = `'${requestItem.requestUrl}'`;
         let urlStr = url;
         let dataStr = '';
-        if (requestItem.type === 'postJson') {
+        if (requestItem.type === 'postJson' || requestItem.type === 'put') {
             urlStr = queryParams.length > 0 ? `mergeUrl(${url}, {${queryParams.map(it => it.name).join(',')}})` : url;
             const body = requestItem.params.find(it => it.in === 'body');
             dataStr = body ? `, ${body.name}` : '';
