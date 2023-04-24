@@ -45,7 +45,7 @@ const changeEnv = function (envStr) {
                 const rootDir = args2 || defaultProjectName;
                 writeProjectConfig(projectTmpJson, allEnv.dev, rootDir);
 
-                // 生成tsconfig.ts
+                // 生成tsconfig.json
                 writeTsConfigJson(require('./templates/tsconfig.tmp'), rootDir);
 
                 // 删除根目录typings文件

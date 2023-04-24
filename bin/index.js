@@ -19,13 +19,33 @@ const { join } = require('path');
     }
 
     // 复制wxs文件
-    const wxsFlolder = join(binFolder, 'wxs');
+    const wxsFlolder = join(binFolder, 'src/utils/wxs');
     const toWxsFolder = join(mpRoot, 'utils/wxs');
     if (!fs.existsSync(toWxsFolder)) {
         fs.mkdirSync(toWxsFolder, { recursive: true });
         copyFolderOrFile(wxsFlolder, toWxsFolder);
     } else {
         console.error('wxs文件夹“' + toWxsFolder.replace(projetFolder, '') + '”已经存在');
+    }
+
+    // 复制custom-tab-bar文件（tabbar文件）
+    const customTabbarFlolder = join(binFolder, 'src/custom-tab-bar');
+    const toCustomTabbarFolder = join(mpRoot, 'custom-tab-bar');
+    if (!fs.existsSync(toCustomTabbarFolder)) {
+        fs.mkdirSync(toCustomTabbarFolder, { recursive: true });
+        copyFolderOrFile(customTabbarFlolder, toCustomTabbarFolder);
+    } else {
+        console.error('custom-tab-bar文件夹“' + toCustomTabbarFolder.replace(projetFolder, '') + '”已经存在');
+    }
+
+    // 复制lib文件（系统核心文件）
+    const sysLibFlolder = join(binFolder, 'src/lib');
+    const toSysLibFolder = join(mpRoot, 'lib');
+    if (!fs.existsSync(toSysLibFolder)) {
+        fs.mkdirSync(toSysLibFolder, { recursive: true });
+        copyFolderOrFile(sysLibFlolder, toSysLibFolder);
+    } else {
+        console.error('lib文件夹“' + toSysLibFolder.replace(projetFolder, '') + '”已经存在');
     }
 
     // 复制cli

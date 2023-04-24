@@ -1,0 +1,11 @@
+<t-tab-bar value="{{value}}" split="{{false}}">
+    <t-tab-bar-item wx:for="{{list}}"
+                    bindtap="goto"
+                    data-page="{{item.pagePath}}"
+                    data-index="{{i}}"
+                    wx:key="index" value="{{item.value}}"
+                    icon="{{item.icon}}"
+                    badge-props="{{ {count: msgCountDict[index] || 0, offset: [-2,-2]} }}">
+        {{item.label}}
+    </t-tab-bar-item>
+</t-tab-bar>

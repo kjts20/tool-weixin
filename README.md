@@ -58,11 +58,20 @@ npm install @kjts20/tool-weixin-mp
 -   在 App 前面（非 App 内部）添加如下代码
 
 ```ts
-import { initHttpServer } from '@kjts20/tool-weixin-mp';
-import { host } from '@/config/env';
+import { startApp, hideApp } from '@/lib/index';
+// 启动app
+startApp();
+```
 
-// 初始化请求
-initHttpServer(host);
+-   在 App 的钩子函数 onHide 添加代码：`hideApp();`
+
+```ts
+App<IAppOption>({
+    ...
+    onHide() {
+        hideApp();
+    }
+});
 ```
 
 #### 八、导入公共样式
@@ -87,3 +96,25 @@ npm run document
 #### 页面路径变化需要执行： `npm run route` 进行更新路由文件（包括 tabar 列表）
 
 #### app.json 内容变化为了保证格式一致性，也需要执行 `npm run route` 进行更新路由文件与 app.json 文件
+
+#### app.json 中自定义 tabbar 时候，图标使用的 icon 字段
+
+```ts
+"tabBar": {
+    "custom": true,
+    "list": [
+        {
+            "selectedColor": "#000000",
+            "text": "测试",
+            "pagePath": "pages/index/index",
+            "icon": "home"
+        },
+        {
+            "selectedColor": "#000000",
+            "text": "测试2",
+            "pagePath": "pages/logs/logs",
+            "icon": "user"
+        }
+    ]
+}
+```
