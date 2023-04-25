@@ -1,0 +1,9 @@
+<block wx:if="{{init}}">
+    <block wx:if="{{hasAuth}}">
+        <slot></slot>
+    </block>
+    <block wx:else>
+        <slot name="no-auth"></slot>
+    </block>
+</block>
+<t-loading wx:elif="{{loading}}" theme="dots" size="60rpx" class="wrapper" />

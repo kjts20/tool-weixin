@@ -439,4 +439,4 @@ const generateTypesAndServiceList = async function (projectRoot = 'miniprogram')
     } catch (e) {
         console.error('基础信息、文档信息写入错误：', e.message || e);
     }
-})(process.argv[3]);
+})(process.argv[2]);

@@ -106,6 +106,7 @@ const writeJson = function (fileName, jsonObj) {
  * @param {导出的对象} exportDict
  */
 const writeTsConfig = function (fileName, exportDict) {
+    createFileDir(file);
     const fileContentList = [];
     if (typeof exportDict === 'object' && exportDict !== null) {
         for (const exportName in exportDict) {

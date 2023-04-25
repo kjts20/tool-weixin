@@ -18,6 +18,11 @@ var isNum = function (num) {
     return typeof num == 'number';
 };
 
+// 是否字符串
+var isBool = function (bool) {
+    return bool === true || bool === false;
+};
+
 // 是否对象
 var isFunc = function (func) {
     return func && typeof func == 'function';
