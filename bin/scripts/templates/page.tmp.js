@@ -8,9 +8,8 @@ const jsonFile = `
 `;
 
 const tsFile = `
-import { globalHooks } from "@/lib/global-hooks";
 const pageKey = 'info';
-Page(globalHooks({
+Page({
     data: {
         info: {params: {}}
     },
@@ -49,7 +48,7 @@ Page(globalHooks({
         //dataBox.params = params;
         //this.setData(toObj(pageKey, dataBox), this.initLoadData);
     }
-}));
+});
 `;
 
 // 生成scss文件的模板

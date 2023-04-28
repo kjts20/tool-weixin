@@ -2,7 +2,7 @@ const { projectBaseUrl, swaggerApiList } = require('./config/document');
 const { writeJson, lineTag, tabTag, createFileDir, writeFile, writeTsConfig } = require('./utils/file');
 const { get } = require('./utils/request');
 const { list2dict, listGroupBy, dict2List } = require('./utils/object');
-const { firstLowerCase } = require('./utils/string');
+const { firstLowerCase, firstUpperCase } = require('./utils/string');
 
 /**
  * [字典]java类型-ts类型
@@ -265,9 +265,7 @@ const toRequestList = function (tags, paths) {
                 response: (function (schema) {
                     if (schema) {
                         if (schema.originalRef) {
-                            return toUseKey(schema.originalRef)
-                                .replace(/List<(.*?)>/g, 'Array<$1>')
-                                .replace('Map', 'object');
+                            return toUseKey(schema.originalRef).replace(/List<(.*?)>/g, 'Array<$1>');
                         } else if (schema.type) {
                             return type2tsDict[schema.type] || 'any';
                         } else {
@@ -297,7 +295,9 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
         const paramsStr = (function (params) {
             const requiredParams = params.filter(it => it.required);
             const otherParams = params.filter(it => !it.required);
-            return [...requiredParams, ...otherParams].map(it => `${it.name}${it.required ? '' : '?'}:${it.type || 'any'}`).join(', ');
+            // 使用微信文件上传
+            const toTypeStr = typeStr => (typeStr === 'File' ? 'WechatMiniprogram.MediaFile' : typeStr || 'any');
+            return [...requiredParams, ...otherParams].map(it => `${it.name}${it.required ? '' : '?'}:${toTypeStr}`).join(', ');
         })(requestItem.params);
         // 请求的url与数据
         const queryParams = requestItem.params.filter(it => it.in === 'query');
@@ -334,7 +334,7 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
         // 提取使用的类型
         const useTypeList = (function () {
             const typeList = [];
-            const baseTypeList = ['number', 'string', 'boolean', 'Array', '[]', 'any', 'object', 'File', 'BaseResponse'];
+            const baseTypeList = ['number', 'string', 'boolean', 'Array', '[]', 'any', 'object', 'Map', 'File', 'BaseResponse'];
             const parseType = function (typeStr) {
                 // 前面添加<，处理成泛型进行替换处理
                 return ('<' + typeStr).replace(/<([^<^>^,]*)/g, ($0, $1) => {
@@ -372,35 +372,67 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
  */
 const writeSettingFile = function (fileName, selectorOptionBeanList) {
     const toItemTmpl = function (item) {
-        return [
-            ,
-            `// ${item.description}`,
-            `const ${item.name} = ${JSON.stringify(item.values, null, 4)};`,
-            `const ${item.name}ValDict = ${JSON.stringify(
-                list2dict(item.values, it => it.value),
-                null,
-                4
-            )};`,
-            `const ${item.name}KeyDict = ${JSON.stringify(
-                list2dict(item.values, it => it.key),
-                null,
-                4
-            )};`
-        ].join(lineTag);
+        return [, `// ${item.description}`, `export const ${item.name} = ${JSON.stringify(item.values, null, 4)};`].join(lineTag);
     };
     writeFile(fileName, selectorOptionBeanList.map(it => toItemTmpl(it)).join(lineTag));
 };
 
 /**
+ * 生成表单验证列表
+ * @param {请求列表} serviceList
+ * @param {类型列表} typeList
+ */
+const toFormValidateList = function (serviceList, typeList) {
+    const typeDict = list2dict(typeList, it => it.name);
+    const validataList = [];
+    serviceList.forEach(serviceItem => {
+        serviceItem.params
+            .filter(it => it.in === 'body' && typeDict[it.type])
+            .forEach(it => {
+                const typeObj = typeDict[it.type];
+                // 如果参数是非必填的，那么里面所有的属性都非必填
+                if (!it.required) {
+                    typeObj.properties.forEach(it => {
+                        it.required = false;
+                    });
+                }
+                validataList.push(typeObj);
+            });
+    });
+    return dict2List(list2dict(validataList, it => it.name));
+};
+
+/**
+ * 写入表单校验文件
+ * @param {文件名称} fileName
+ * @param {校验文件} validataList
+ */
+const writeFormValidateFile = function (fileName, validataList) {
+    const toItemParamsTmpl = function (param) {
+        return `{column: '${param.name}', title: '${param.description}', validate: [${param.required ? 'validateRequired' : ''}]}`;
+    };
+    const toItemTmpl = function (item) {
+        return [`// ${item.description}`, `export const validate${firstUpperCase(item.name)} = [`, item.properties.map(it => tabTag + toItemParamsTmpl(it)).join(',' + lineTag), '];'].join(lineTag);
+    };
+    const toFileTmpl = function (list) {
+        return ['import { validateRequired } from "@kjts20/tool";', ...list.map(it => toItemTmpl(it))].join(lineTag.repeat(2));
+    };
+    writeFile(fileName, toFileTmpl(validataList));
+};
+
+/**
  * 生成类型与请求列表
+ * @param {项目根目录} projectRoot
  */
 const generateTypesAndServiceList = async function (projectRoot = 'miniprogram') {
     // 获取项目基础信息
     const { data: projectSetting } = await get(projectBaseUrl);
     const { selectorOptionBeanList, beanGenericityList, selectorMapperItemList } = projectSetting;
     const typeAndServiceTypeList = [];
+    const serviceRoot = 'services';
     const typeRoot = `types`;
-    const serviceRoot = `services`;
+    const apiRoot = `apis`;
+    const validateRoot = `validates`;
     // 类型与服务列表
     for (const apiInfo of swaggerApiList) {
         const document = await get(apiInfo.docUrl);
@@ -411,6 +443,10 @@ const generateTypesAndServiceList = async function (projectRoot = 'miniprogram')
         const { tags, paths, definitions } = document;
         // 生成类型数据
         const typeList = typeDecorate(toTypesList(definitions, beanGenericityList), selectorMapperItemList, selectorOptionBeanList);
+        // 写入类型文件
+        const typeDecrption = ['/*', ' * @author: sskj-generator', ` * @description: ${apiInfo.description}`, ` * @url: ${apiInfo.docUrl}`, ' */'].join(lineTag);
+        const typeFileName = `${typeRoot}/${apiInfo.name}`;
+        writeTypeFile(`${projectRoot}/${serviceRoot}/${typeFileName}.ts`, typeDecrption, typeList);
         // 生成service
         const serviceList = toRequestList(tags, paths);
         typeAndServiceTypeList.push({
@@ -419,13 +455,12 @@ const generateTypesAndServiceList = async function (projectRoot = 'miniprogram')
             typeList,
             serviceList
         });
-        // 写入类型文件
-        const typeDecrption = ['/*', ' * @author: sskj-generator', ` * @description: ${apiInfo.description}`, ` * @url: ${apiInfo.docUrl}`, ' */'].join(lineTag);
-        const typeFileName = `${typeRoot}/${apiInfo.name}`;
-        writeTypeFile(`${projectRoot}/${typeFileName}.ts`, typeDecrption, typeList);
         // 写入请求文件
-        const serviceBaseFileName = `${projectRoot}/${serviceRoot}/${apiInfo.name}`;
-        writeReqestFile(serviceBaseFileName, `../../${typeFileName}`, serviceList);
+        writeReqestFile(`${projectRoot}/${serviceRoot}/${apiRoot}/${apiInfo.name}`, `../../${typeFileName}`, serviceList);
+        // 生成表单验证数据
+        const validateList = toFormValidateList(serviceList, typeList);
+        // 写入表单验证文件
+        writeFormValidateFile(`${projectRoot}/${serviceRoot}/${validateRoot}/${apiInfo.name}.ts`, validateList);
     }
     // 写入枚举文件
     const settingRoot = `config`;
@@ -439,4 +474,4 @@ const generateTypesAndServiceList = async function (projectRoot = 'miniprogram')
     } catch (e) {
         console.error('基础信息、文档信息写入错误：', e.message || e);
     }
-})(process.argv[2]);
+})(process.argv[3]);

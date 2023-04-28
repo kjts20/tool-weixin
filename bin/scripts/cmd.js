@@ -45,7 +45,7 @@ const changeEnv = function (envStr) {
                 const rootDir = args2 || defaultProjectName;
                 writeProjectConfig(projectTmpJson, allEnv.dev, rootDir);
 
-                // 生成tsconfig.json
+                // 生成tsconfig.ts
                 writeTsConfigJson(require('./templates/tsconfig.tmp'), rootDir);
 
                 // 删除根目录typings文件
@@ -57,8 +57,7 @@ const changeEnv = function (envStr) {
                 !appJson.useExtendedLib && (appJson.useExtendedLib = {});
                 if (!appJson.useExtendedLib?.weui) {
                     appJson.useExtendedLib.weui = true;
-                }
-                !appJson.resolveAlias && (appJson.resolveAlias = {});
+                } !appJson.resolveAlias && (appJson.resolveAlias = {});
                 if (!appJson.resolveAlias['@/*']) {
                     appJson.resolveAlias['@/*'] = '/*';
                 }

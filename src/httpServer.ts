@@ -14,7 +14,7 @@ export const httpServer = new HttpServer({
         return useHeader;
     },
     request: wx.request,
-    uploadFile: wx.request,
+    uploadFile: wx.uploadFile,
     responseIntercept: (response: HttpResponse) => response
 });
 
