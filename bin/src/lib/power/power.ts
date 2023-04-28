@@ -2,7 +2,7 @@ import { biList2Dict } from '@kjts20/tool';
 import { storage } from '@kjts20/tool-weixin-mp';
 
 // 权限字段
-const powserKey = 'system-powser';
+const powerKey = 'system-powser';
 
 // 设置权限
 export const setPowserFromApi = function () {
@@ -21,15 +21,15 @@ export const setPowserFromApi = function () {
             {
                 type: 'system',
                 name: 'productSalePrice',
-                value: "true"
+                value: 'true'
             }
         ];
         storage.setStorageSync(
             powserKey,
             biList2Dict(
                 powserList,
-                (it) => `${it.type}.${it.name}`,
-                (it) => it.value
+                it => `${it.type}.${it.name}`,
+                it => it.value
             )
         );
     }, 2000);
@@ -37,11 +37,11 @@ export const setPowserFromApi = function () {
 
 // 清除权限
 export const clearPowser = function () {
-    return storage.removeStorage(powserKey);
+    return storage.removeStorage(powerKey);
 };
 
 // 获取权限
 export const getPowser = function (powserName) {
-    const powserDict = storage.getStorageSync(powserKey) || {};
+    const powserDict = storage.getStorageSync(powerKey) || {};
     return powserDict[powserName];
 };

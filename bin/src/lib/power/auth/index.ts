@@ -1,4 +1,4 @@
-import { getPowser } from '@/lib/powser/powser';
+import { getPower } from '@/lib/power/power';
 import { isUndefined, toJson } from '@kjts20/tool';
 
 Component({
@@ -11,7 +11,7 @@ Component({
             type: String,
             observer(name) {
                 // 获取权限相关信息
-                const powserVal = getPowser(name);
+                const powserVal = getPower(name);
                 // 没有设置就是没有权限
                 const hasAuth = !isUndefined(powserVal);
                 this.setData({ init: true, hasAuth }, () => {
