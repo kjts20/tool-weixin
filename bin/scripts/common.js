@@ -110,7 +110,7 @@ const writeTsConfigJson = function (fileContent, rootDir) {
     fileContent.compilerOptions.paths = {
         '@/*': [rootDir + '/*']
     };
-    fileContent.include = [rootDir + '/**/*.ts'];
+    fileContent.include = ['./cli/typings/**/*.d.ts', rootDir + '/**/*.ts'];
     writeJson(tsconfigJsonPath, fileContent);
 };
 

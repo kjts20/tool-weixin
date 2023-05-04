@@ -1,8 +1,9 @@
-const { projectBaseUrl, swaggerApiList } = require('./config/document');
-const { writeJson, lineTag, tabTag, createFileDir, writeFile, writeTsConfig } = require('./utils/file');
-const { get } = require('./utils/request');
-const { list2dict, listGroupBy, dict2List } = require('./utils/object');
-const { firstLowerCase, firstUpperCase } = require('./utils/string');
+const { projectBaseUrl, swaggerApiList } = require('./config');
+const { writeJson, lineTag, tabTag, createFileDir, writeFile, writeTsConfig } = require('../utils/file');
+const { get } = require('../utils/request');
+const { list2dict, listGroupBy, dict2List } = require('../utils/object');
+const { firstLowerCase, firstUpperCase } = require('../utils/string');
+const { join } = require('path');
 
 /**
  * [字典]java类型-ts类型
@@ -23,6 +24,7 @@ const type2tsDict = {
 const jsNameConflict = {
     delete: 'del'
 };
+
 /**
  * 生成js命名
  * @param {名字} name
@@ -31,7 +33,7 @@ const jsNameConflict = {
 const toJsName = function (name) {
     // 过滤非法字符
     const namePart = [];
-    name.replace(/[a-zA-Z0-9\_\$]+/g, $0 => namePart.push($0));
+    name.replace(/[a-zA-Z0-9\_\$]+/g, ($0) => namePart.push($0));
     const nameStr = namePart.join('');
     // 过滤关键字
     return jsNameConflict[nameStr] || nameStr;
@@ -63,14 +65,14 @@ const toTypesList = function (definitions, beanGenericityList) {
         const useKey = toUseKey(key);
         const baseKey = useKey.replace(toBaseNameRe, '$1');
         const item = definitions[key];
-        const definitionAttrs = beanGenericityList.filter(it => it.beanName === baseKey);
-        const attrDict = list2dict(definitionAttrs, it => it.attr);
+        const definitionAttrs = beanGenericityList.filter((it) => it.beanName === baseKey);
+        const attrDict = list2dict(definitionAttrs, (it) => it.attr);
         // 字段是否必填（如果有required字段声明的才必填，没有required字段都是必填）
         const requiredAttrs = item.required;
         // 使用的泛型
         const useGenericityList = [];
-        definitionAttrs.forEach(it => {
-            it.useTypes.map(tit => {
+        definitionAttrs.forEach((it) => {
+            it.useTypes.map((tit) => {
                 useGenericityList.push(tit);
             });
         });
@@ -79,7 +81,7 @@ const toTypesList = function (definitions, beanGenericityList) {
             ...item,
             name: baseKey,
             useGenericityList,
-            properties: dict2List(item.properties, 'name').map(it => {
+            properties: dict2List(item.properties, 'name').map((it) => {
                 const { name, description } = it;
                 const noteIt = attrDict[name];
                 // 一般类型引用
@@ -113,7 +115,7 @@ const toTypesList = function (definitions, beanGenericityList) {
             })
         });
     }
-    return dict2List(list2dict(allTypes, it => it.name));
+    return dict2List(list2dict(allTypes, (it) => it.name));
 };
 
 /**
@@ -123,18 +125,18 @@ const toTypesList = function (definitions, beanGenericityList) {
  * @param {选择器列表} selectorOptionList
  */
 const typeDecorate = function (typeList, selectorMapperList, selectorOptionList) {
-    const selectorMapperDict = listGroupBy(selectorMapperList, it => it.docName);
-    const selectorNameDict = list2dict(selectorOptionList, it => it.name);
-    typeList.forEach(typeIt => {
+    const selectorMapperDict = listGroupBy(selectorMapperList, (it) => it.docName);
+    const selectorNameDict = list2dict(selectorOptionList, (it) => it.name);
+    typeList.forEach((typeIt) => {
         const mapperList = selectorMapperDict[typeIt.name];
         if (Array.isArray(mapperList)) {
-            const attrDict = list2dict(mapperList, mapperIt => mapperIt.attr);
-            typeIt.properties.forEach(attrIt => {
+            const attrDict = list2dict(mapperList, (mapperIt) => mapperIt.attr);
+            typeIt.properties.forEach((attrIt) => {
                 const useAttr = attrDict[attrIt.name];
                 if (useAttr) {
                     const enumIt = selectorNameDict[useAttr.enumName];
                     attrIt.description = enumIt.remark;
-                    attrIt.type = enumIt.values.map(it => it.value).join('|');
+                    attrIt.type = enumIt.values.map((it) => it.value).join('|');
                 }
             });
         }
@@ -155,12 +157,12 @@ const writeTypeFile = function (fileName, description, typeList) {
     };
     // 类型模板
     const toTypeTmpl = function (typeIt) {
-        const nameAndType = `${typeIt.name}${typeIt.useGenericityList.length > 0 ? `<${typeIt.useGenericityList.map(it => `${it}=any`).join(',')}>` : ''}`;
-        const properties = `${typeIt.properties.map(it => toTypeAttrTmpl(it)).join(lineTag)}`;
+        const nameAndType = `${typeIt.name}${typeIt.useGenericityList.length > 0 ? `<${typeIt.useGenericityList.map((it) => `${it}=any`).join(',')}>` : ''}`;
+        const properties = `${typeIt.properties.map((it) => toTypeAttrTmpl(it)).join(lineTag)}`;
         return [, `// ${typeIt.description || typeIt.name}`, `export interface ${nameAndType} {`, properties, '}'].join(lineTag);
     };
     // 写入文件
-    writeFile(fileName, [`${description || '类型文件'}`, typeList.map(it => toTypeTmpl(it)).join(lineTag)].join(lineTag));
+    writeFile(fileName, [`${description || '类型文件'}`, typeList.map((it) => toTypeTmpl(it)).join(lineTag)].join(lineTag));
 };
 
 /**
@@ -172,11 +174,11 @@ const writeTypeFile = function (fileName, description, typeList) {
 const toRequestList = function (tags, paths) {
     // 标签处理（用了作为文件名称）
     const tagsDict = list2dict(
-        tags.map(it => ({
+        tags.map((it) => ({
             description: it.name,
             name: it.description.replace(/\s/g, '')
         })),
-        it => it.description
+        (it) => it.description
     );
     // 请求处理
     const requestList = [];
@@ -185,7 +187,7 @@ const toRequestList = function (tags, paths) {
         for (const method in pathItem) {
             const requestItem = pathItem[method];
             const { responses, parameters, operationId, summary, tags } = requestItem;
-            const fileName = tags.map(it => tagsDict[it]).find(it => it)?.name || 'controller';
+            const fileName = tags.map((it) => tagsDict[it]).find((it) => it)?.name || 'controller';
             const name = operationId
                 .replace(new RegExp(`^(.*?)Using${method}_\\d+$`, 'i'), (_, $1) => firstLowerCase($1))
                 .replace(new RegExp(`^(.*?)Using${method}$`, 'i'), (_, $1) => firstLowerCase($1));
@@ -193,9 +195,9 @@ const toRequestList = function (tags, paths) {
             const type = (function () {
                 if (method === 'post') {
                     if (parameters) {
-                        if (parameters.filter(it => it.in === 'body').length > 0) {
+                        if (parameters.filter((it) => it.in === 'body').length > 0) {
                             return 'postJson';
-                        } else if (parameters.filter(it => it.in === 'formData').length > 0) {
+                        } else if (parameters.filter((it) => it.in === 'formData').length > 0) {
                             return 'upload';
                         } else {
                             return 'post';
@@ -215,10 +217,10 @@ const toRequestList = function (tags, paths) {
             requestList.push({
                 requestUrl: url,
                 fileName,
-                name: toJsName(name),
+                name: firstLowerCase(toJsName(fileName.replace(/^(.*?)controller$/i, '$1'))) + firstUpperCase(toJsName(name)),
                 type,
                 description: summary,
-                params: (parameters || []).map(it => {
+                params: (parameters || []).map((it) => {
                     // 类型处理
                     const type = (function () {
                         if (it.in === 'body') {
@@ -293,25 +295,25 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
     const toRequestItemTmpl = function (requestItem) {
         // 形参字符串
         const paramsStr = (function (params) {
-            const requiredParams = params.filter(it => it.required);
-            const otherParams = params.filter(it => !it.required);
+            const requiredParams = params.filter((it) => it.required);
+            const otherParams = params.filter((it) => !it.required);
             // 使用微信文件上传
-            const toTypeStr = typeStr => (typeStr === 'File' ? 'WechatMiniprogram.MediaFile' : typeStr || 'any');
-            return [...requiredParams, ...otherParams].map(it => `${it.name}${it.required ? '' : '?'}:${toTypeStr(it.type)}`).join(', ');
+            const toTypeStr = (typeStr) => (typeStr === 'File' ? 'WechatMiniprogram.MediaFile' : typeStr || 'any');
+            return [...requiredParams, ...otherParams].map((it) => `${it.name}${it.required ? '' : '?'}:${toTypeStr(it.type)}`).join(', ');
         })(requestItem.params);
         // 请求的url与数据
-        const queryParams = requestItem.params.filter(it => it.in === 'query');
+        const queryParams = requestItem.params.filter((it) => it.in === 'query');
         const url = `'${requestItem.requestUrl}'`;
         let urlStr = url;
         let dataStr = '';
         if (requestItem.type === 'postJson' || requestItem.type === 'put') {
-            urlStr = queryParams.length > 0 ? `mergeUrl(${url}, {${queryParams.map(it => it.name).join(',')}})` : url;
-            const body = requestItem.params.find(it => it.in === 'body');
+            urlStr = queryParams.length > 0 ? `mergeUrl(${url}, {${queryParams.map((it) => it.name).join(',')}})` : url;
+            const body = requestItem.params.find((it) => it.in === 'body');
             dataStr = body ? `, ${body.name}` : '';
         } else {
-            dataStr = queryParams.length > 0 ? `, {${queryParams.map(it => it.name).join(', ')}}` : '';
+            dataStr = queryParams.length > 0 ? `, {${queryParams.map((it) => it.name).join(', ')}}` : '';
             if (requestItem.type === 'upload') {
-                const fileName = requestItem.params.find(it => it.in === 'formData' && it.type === 'File').name;
+                const fileName = requestItem.params.find((it) => it.in === 'formData' && it.type === 'File').name;
                 dataStr = `, ${fileName || null}${dataStr}`;
             }
         }
@@ -320,13 +322,13 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
             ,
             `/*`,
             ` * ${requestItem.description}`,
-            requestItem.params.map(it => ` * @param {${it.description || '*'}} ${it.name}`).join(lineTag),
+            requestItem.params.map((it) => ` * @param {${it.description || '*'}} ${it.name}`).join(lineTag),
             ' */',
             `export const ${requestItem.name} = function(${paramsStr}):Promise<${responseType}>{`,
             `${tabTag}return httpServer.${requestItem.type}(${urlStr}${dataStr});`,
             '};'
         ]
-            .filter(it => it)
+            .filter((it) => it)
             .join(lineTag);
     };
     // 生成请求文件模板
@@ -343,23 +345,23 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
                     }
                 });
             };
-            requestList.forEach(requestItem => {
+            requestList.forEach((requestItem) => {
                 parseType(requestItem.response);
-                requestItem.params.forEach(param => {
+                requestItem.params.forEach((param) => {
                     parseType(param.type);
                 });
             });
-            return dict2List(list2dict(typeList, it => it));
+            return dict2List(list2dict(typeList, (it) => it));
         })();
 
         return [
             `import {HttpResponse, mergeUrl } from '@kjts20/tool';`,
             `import {httpServer } from '@kjts20/tool-weixin-mp';`,
             `import {${useTypeList.join(', ')}} from '${typeFile}';`,
-            requestList.map(requestItem => toRequestItemTmpl(requestItem)).join(lineTag)
+            requestList.map((requestItem) => toRequestItemTmpl(requestItem)).join(lineTag)
         ].join(lineTag);
     };
-    const requestFileDict = listGroupBy(requestList, it => it.fileName);
+    const requestFileDict = listGroupBy(requestList, (it) => it.fileName);
     for (const fileName in requestFileDict) {
         writeFile(`${saveRoot}/${fileName}.ts`, toRequestFileTmpl(requestFileDict[fileName]));
     }
@@ -374,7 +376,7 @@ const writeSettingFile = function (fileName, selectorOptionBeanList) {
     const toItemTmpl = function (item) {
         return [, `// ${item.description}`, `export const ${item.name} = ${JSON.stringify(item.values, null, 4)};`].join(lineTag);
     };
-    writeFile(fileName, selectorOptionBeanList.map(it => toItemTmpl(it)).join(lineTag));
+    writeFile(fileName, selectorOptionBeanList.map((it) => toItemTmpl(it)).join(lineTag));
 };
 
 /**
@@ -383,23 +385,26 @@ const writeSettingFile = function (fileName, selectorOptionBeanList) {
  * @param {类型列表} typeList
  */
 const toFormValidateList = function (serviceList, typeList) {
-    const typeDict = list2dict(typeList, it => it.name);
+    const typeDict = list2dict(typeList, (it) => it.name);
     const validataList = [];
-    serviceList.forEach(serviceItem => {
+    serviceList.forEach((serviceItem) => {
         serviceItem.params
-            .filter(it => it.in === 'body' && typeDict[it.type])
-            .forEach(it => {
+            .filter((it) => it.in === 'body' && typeDict[it.type])
+            .forEach((it) => {
                 const typeObj = typeDict[it.type];
                 // 如果参数是非必填的，那么里面所有的属性都非必填
                 if (!it.required) {
-                    typeObj.properties.forEach(it => {
+                    typeObj.properties.forEach((it) => {
                         it.required = false;
                     });
                 }
-                validataList.push(typeObj);
+                validataList.push({
+                    ...typeObj,
+                    validateName: `validate${firstUpperCase(typeObj.name)}`
+                });
             });
     });
-    return dict2List(list2dict(validataList, it => it.name));
+    return dict2List(list2dict(validataList, (it) => it.name));
 };
 
 /**
@@ -412,10 +417,10 @@ const writeFormValidateFile = function (fileName, validataList) {
         return `{column: '${param.name}', title: '${param.description}', validate: [${param.required ? 'validateRequired' : ''}]}`;
     };
     const toItemTmpl = function (item) {
-        return [`// ${item.description}`, `export const validate${firstUpperCase(item.name)} = [`, item.properties.map(it => tabTag + toItemParamsTmpl(it)).join(',' + lineTag), '];'].join(lineTag);
+        return [`// ${item.description}`, `export const ${item.validateName} = [`, item.properties.map((it) => tabTag + toItemParamsTmpl(it)).join(',' + lineTag), '];'].join(lineTag);
     };
     const toFileTmpl = function (list) {
-        return ['import { validateRequired } from "@kjts20/tool";', ...list.map(it => toItemTmpl(it))].join(lineTag.repeat(2));
+        return ['import { validateRequired } from "@kjts20/tool";', ...list.map((it) => toItemTmpl(it))].join(lineTag.repeat(2));
     };
     writeFile(fileName, toFileTmpl(validataList));
 };
@@ -433,7 +438,9 @@ const generateTypesAndServiceList = async function (projectRoot = 'miniprogram')
     const typeRoot = `types`;
     const apiRoot = `apis`;
     const validateRoot = `validates`;
+
     // 类型与服务列表
+    const documentNoteList = [];
     for (const apiInfo of swaggerApiList) {
         const document = await get(apiInfo.docUrl);
         if (!document) {
@@ -441,12 +448,14 @@ const generateTypesAndServiceList = async function (projectRoot = 'miniprogram')
             throw new Error('请到cli/config/document.js中验证文档地址、项目配置地址！！！');
         }
         const { tags, paths, definitions } = document;
+
         // 生成类型数据
         const typeList = typeDecorate(toTypesList(definitions, beanGenericityList), selectorMapperItemList, selectorOptionBeanList);
         // 写入类型文件
         const typeDecrption = ['/*', ' * @author: sskj-generator', ` * @description: ${apiInfo.description}`, ` * @url: ${apiInfo.docUrl}`, ' */'].join(lineTag);
         const typeFileName = `${typeRoot}/${apiInfo.name}`;
         writeTypeFile(`${projectRoot}/${serviceRoot}/${typeFileName}.ts`, typeDecrption, typeList);
+
         // 生成service
         const serviceList = toRequestList(tags, paths);
         typeAndServiceTypeList.push({
@@ -455,23 +464,38 @@ const generateTypesAndServiceList = async function (projectRoot = 'miniprogram')
             typeList,
             serviceList
         });
-        // 写入请求文件
+        // 写入service文件
         writeReqestFile(`${projectRoot}/${serviceRoot}/${apiRoot}/${apiInfo.name}`, `../../${typeFileName}`, serviceList);
+
         // 生成表单验证数据
         const validateList = toFormValidateList(serviceList, typeList);
         // 写入表单验证文件
         writeFormValidateFile(`${projectRoot}/${serviceRoot}/${validateRoot}/${apiInfo.name}.ts`, validateList);
+
+        // 记录写入文件记录
+        documentNoteList.push({
+            ...apiInfo,
+            typeList,
+            serviceList,
+            validateList
+        });
     }
-    // 写入枚举文件
+
+    // 写入枚举文件（系统配置文件）
     const settingRoot = `config`;
     writeSettingFile(`${projectRoot}/${settingRoot}/settings.ts`, selectorOptionBeanList);
+
+    // 返回文档记录列表
+    return documentNoteList;
 };
 
-(function (rootDir) {
-    // 生成类型、服务列表
+// 生成类型、服务列表
+(function (rootDir, scriptFileName) {
     try {
-        generateTypesAndServiceList(rootDir);
+        generateTypesAndServiceList(rootDir).then((noteList) => {
+            writeJson(join(scriptFileName, '../note.json'), noteList);
+        });
     } catch (e) {
         console.error('基础信息、文档信息写入错误：', e.message || e);
     }
-})(process.argv[3]);
+})(process.argv[2], process.argv[1]);
