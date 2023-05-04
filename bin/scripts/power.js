@@ -1,19 +1,6 @@
 const { getPowerList } = require('./config/power');
 const { lineTag, tabTag, writeFile } = require('./utils/file');
 const { get } = require('./utils/request');
-/**
- * 模拟接口数据
- */
-// const mock = {data: {
-//     system: [
-//         {name: 'productSalePrice',description: '商品>售价'},
-//         {name: 'productPifaPrice',description: '商品>售价'}
-//     ],
-//     custom: [
-//         {name: 'indexBabber', description: '首页tabbar'},
-//         {name: 'controlMenu',description: '工作台菜单'}
-//     ]
-// }};
 
 /**
  * 获取权限列表
@@ -24,7 +11,7 @@ const getPowserData = async function () {
         data: { system, custom }
     } = await get(getPowerList);
     const listPowser = (list, type) =>
-        (list || []).map((it) => ({
+        (list || []).map(it => ({
             type: type || it.type,
             name: it.name,
             description: it.description
@@ -45,7 +32,7 @@ const writePowserFile = function (fileName, systemList, customList) {
         return [`${tabTag}// ${item.description}`, `${tabTag}${item.name}: '${item.type}.${item.name}'`].join(lineTag);
     };
     const toSectionTmpl = function (name, description, powserList) {
-        return ['/**', ' * ' + description, ' */', `export const ${name}Powser = {`, powserList.map((it) => toItemTmpl(it)).join(',' + lineTag), '};'].join(lineTag);
+        return ['/**', ' * ' + description, ' */', `export const ${name}Powser = {`, powserList.map(it => toItemTmpl(it)).join(',' + lineTag), '};'].join(lineTag);
     };
     writeFile(fileName, [toSectionTmpl('system', '系统权限', systemList), toSectionTmpl('custom', '自定义权限', customList)].join(lineTag.repeat(2)));
 };

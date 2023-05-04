@@ -297,7 +297,7 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
             const otherParams = params.filter(it => !it.required);
             // 使用微信文件上传
             const toTypeStr = typeStr => (typeStr === 'File' ? 'WechatMiniprogram.MediaFile' : typeStr || 'any');
-            return [...requiredParams, ...otherParams].map(it => `${it.name}${it.required ? '' : '?'}:${toTypeStr}`).join(', ');
+            return [...requiredParams, ...otherParams].map(it => `${it.name}${it.required ? '' : '?'}:${toTypeStr(it.type)}`).join(', ');
         })(requestItem.params);
         // 请求的url与数据
         const queryParams = requestItem.params.filter(it => it.in === 'query');
