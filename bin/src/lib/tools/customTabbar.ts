@@ -32,12 +32,16 @@ export const showTabbar = function (pageThis: WechatMiniprogram.Page.Instance<an
  */
 export const selectedTabbar = function (pageThis: WechatMiniprogram.Page.Instance<any, any>) {
     const route = pageThis.route;
-    const selectedIndex = getTabbarPageIndex(route);
-    if (selectedIndex >= 0) {
-        const tabbarPage = pageThis.getTabBar();
-        if (isObj(tabbarPage) && isFunc(tabbarPage.onShow)) {
-            tabbarPage.onShow({ index: selectedIndex, route });
+    if (route) {
+        const selectedIndex = getTabbarPageIndex(route);
+        if (selectedIndex >= 0) {
+            const tabbarPage = pageThis.getTabBar();
+            if (isObj(tabbarPage) && isFunc(tabbarPage.onShow)) {
+                tabbarPage.onShow({ index: selectedIndex, route });
+            }
         }
+    } else {
+        console.warn('页面路径获取不到！！！', route);
     }
 };
 

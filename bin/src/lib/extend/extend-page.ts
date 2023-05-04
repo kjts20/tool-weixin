@@ -1,6 +1,7 @@
-import { isFunc, isObj, isStr } from '@kjts20/tool';
-import { error, goto } from '@kjts20/tool-weixin-mp';
+import { isFunc, isObj, isStr, obj2RequestUrl, requestStr2Obj, toJson, urlDecode } from '@kjts20/tool';
+import { error, getCurrentPage, getLoginUserId, goto } from '@kjts20/tool-weixin-mp';
 import { selectedTabbar } from '../tools/customTabbar';
+import { noteShare } from '../tools/sysShare';
 
 /**
  * 扩展微信页面
@@ -61,6 +62,102 @@ const extendPage = (UsePage) => {
             // 是否调用onShow
             if (self.isCanShow() && isFunc(_onShow)) {
                 _onShow.call(self, ...args);
+            }
+        };
+
+        // 是否调用onShow方法
+        const _isCanLoad = pageObj.isCanLoad;
+        pageObj.isCanLoad = function (...args) {
+            const self = this;
+            if (isFunc(_isCanLoad)) {
+                return _isCanLoad.call(self, ...args);
+            } else {
+                return true;
+            }
+        };
+
+        // onLoad方法
+        const _onLoad = pageObj.onLoad;
+        pageObj.onLoad = function (options) {
+            const self = this;
+            // 后端生成的二维码，扫码进来时候携带scene，解析到options
+            if (options && isStr(options.scene)) {
+                options = {
+                    ...options,
+                    ...requestStr2Obj(urlDecode(urlDecode(options.scene)))
+                };
+            }
+
+            // 统一url解密（在跳转时候统一进行url加密）
+            for (const key in options || {}) {
+                options[key] = urlDecode(options[key]);
+            }
+
+            // 记录溯源信息
+            const pageOptions = options || {};
+            const { _from, _share_options } = pageOptions;
+            if (_from === 'share_menu') {
+                noteShare('分享按钮', _from, _share_options);
+            } else if (_from === 'share') {
+                noteShare('页面分享', _from, _share_options);
+            } else if (_from === 'qrcode') {
+                noteShare('二维码分享', _from, _share_options);
+            } else if (isStr(_from)) {
+                noteShare('未知', _from, _share_options);
+            }
+
+            // 分享路径中有参数，那么就解析出来
+            if (isStr(_share_options)) {
+                const shareOpt = toJson(urlDecode(_share_options));
+                for (const key in shareOpt) {
+                    options[key] = shareOpt[key];
+                }
+                // [自定义分享函数] 回调到分享函数
+                const _onLoadShare = pageObj.onLoadShare;
+                if (isFunc(_onLoadShare)) {
+                    _onLoadShare.call(self, shareOpt);
+                }
+            }
+            delete pageOptions._share_options;
+            delete pageOptions._from;
+
+            // 保存参数
+            if (isObj(options)) {
+                self.pageReceiptArgs = pageOptions;
+            }
+
+            // 是否调用onLoad
+            if (self.isCanLoad() && isFunc(_onLoad)) {
+                _onLoad.call(self, pageOptions);
+            }
+        };
+
+        // 分享
+        const _onShareAppMessage = pageObj.onShareAppMessage;
+        pageObj.onShareAppMessage = function (e) {
+            const self = this;
+            // 分享结果
+            let shareRes = null;
+            if (isFunc(_onShareAppMessage)) {
+                shareRes = _onShareAppMessage.call(self, e);
+            }
+            if (isObj(shareRes)) {
+                return shareRes;
+            } else {
+                const currentPage = getCurrentPage();
+                const routeArgs = {
+                    _from: e.from || 'share_menu',
+                    _share_options: {
+                        ...self.pageReceiptArgs,
+                        shareUserId: getLoginUserId(),
+                        ...(e.target?.dataset || {})
+                    }
+                };
+                console.log(routeArgs);
+                return {
+                    title: '时时科技给您分享了小程序',
+                    path: `/${currentPage.route}?` + obj2RequestUrl(routeArgs)
+                };
             }
         };
 
