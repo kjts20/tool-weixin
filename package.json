@@ -26,7 +26,7 @@
     "author": "wkj",
     "license": "Apache",
     "devDependencies": {
-        "@kjts20/tool": "^0.0.90",
+        "@kjts20/tool": "^0.0.92",
         "tsup": "^6.4.0",
         "typescript": "^4.8.4"
     },
