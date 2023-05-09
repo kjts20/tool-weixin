@@ -64,6 +64,18 @@ export const getExistPage = function (topOrder = 0): TPageHistory | null {
     }
 };
 
+// 获取页面示例（在页面栈中的页面）
+export const getPageInstance = async function (route: string) {
+    if (isStr(route)) {
+        for (const page of getCurrentPages()) {
+            if (route === page.route) {
+                return page;
+            }
+        }
+    }
+    return null;
+};
+
 /**
  * 通过页面栈获取页面实际层
  * @param pages 页面栈
