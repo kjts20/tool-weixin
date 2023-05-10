@@ -57,7 +57,9 @@ const changeEnv = function (envStr) {
                 !appJson.useExtendedLib && (appJson.useExtendedLib = {});
                 if (!appJson.useExtendedLib?.weui) {
                     appJson.useExtendedLib.weui = true;
-                } !appJson.resolveAlias && (appJson.resolveAlias = {});
+                }
+                !appJson.resolveAlias && (appJson.resolveAlias = {});
+                // 写入别名路径
                 if (!appJson.resolveAlias['@/*']) {
                     appJson.resolveAlias['@/*'] = '/*';
                 }
@@ -66,6 +68,21 @@ const changeEnv = function (envStr) {
                 }
                 if (!appJson.resolveAlias['@kjts20/tool-weixin-mp/*']) {
                     appJson.resolveAlias['@kjts20/tool-weixin-mp/*'] = 'miniprogram_npm/@kjts20/tool-weixin-mp/*';
+                }
+                // 添加公共组件
+                if (!appJson.usingComponents) {
+                    appJson.usingComponents = {};
+                }
+                const usingComponents = {
+                    'custom-page': '/components/custom-page/index',
+                    'load-more': '/components/load-more/index',
+                    't-toast': 'tdesign-miniprogram/toast/toast',
+                    't-dialog': 'tdesign-miniprogram/dialog/dialog',
+                    't-loading': 'tdesign-miniprogram/loading/loading',
+                    't-message': 'tdesign-miniprogram/message/message'
+                };
+                for (const name in usingComponents) {
+                    appJson.usingComponents[name] = usingComponents[name];
                 }
                 writeAppJson(appJson);
                 break;
