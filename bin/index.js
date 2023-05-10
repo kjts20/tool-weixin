@@ -68,6 +68,16 @@ const { join } = require('path');
         console.error('脚手架文件夹“' + toCliFolder.replace(projetFolder, '') + '”已经存在');
     }
 
+    // 样式
+    const sysStyleFlolder = join(binFolder, 'src/style');
+    const toSysStyleFolder = join(mpRoot, 'style');
+    if (!fs.existsSync(toSysStyleFolder)) {
+        fs.mkdirSync(toSysStyleFolder, { recursive: true });
+        copyFolderOrFile(sysStyleFlolder, toSysStyleFolder);
+    } else {
+        console.error('style文件夹“' + toSysStyleFolder.replace(projetFolder, '') + '”已经存在');
+    }
+
     // 更新package的命令
     const packageJson = readJson(packageJsonName);
     if (packageJson !== null) {

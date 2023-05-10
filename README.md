@@ -80,6 +80,11 @@ App<IAppOption>({
 
 ```css
 @import './miniprogram_npm/@kjts20/tool/wx.wxss';
+@import './style/wr-iconfont/iconfont.wxss';
+
+.t-tabs__item--active {
+    font-weight: 400 !important;
+}
 ```
 
 #### 九、配置 cli/common.js 中的 swaggerApi 字段，设置文档路径与基础信息获取接口
