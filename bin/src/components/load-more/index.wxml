@@ -1,0 +1,28 @@
+<view class="flex-center height-100 font-24">
+    <!-- 加载中 -->
+    <t-loading
+               wx:if="{{waiting}}"
+               loading
+               t-class-indicator="t-class-indicator"
+               t-class-text="t-class-text"
+               text="{{loadingText}}"
+               theme="circular"
+               size="40rpx" />
+    <block wx:elif="{{paging}}">
+        <!-- 错误重试 -->
+        <view wx:if="{{paging.error || paging.fail}}" class="flex-center ">
+            <view class="padding-right-20">加载失败</view>
+            <view bindtap="onRetry" class="color-danger cursor-pointer">刷新</view>
+        </view>
+        <!-- 加载完毕 -->
+        <block wx:elif="{{paging.success}}">
+            <!-- 空列表 -->
+            <block wx:if="{{paging.empty}}">
+                <slot wx:if="{{useEmptySlot}}" name="empty"></slot>
+                <t-empty wx:else description="{{emptyText}}" />
+            </block>
+            <!-- 加载完毕 -->
+            <t-divider wx:elif="{{!paging.hasMore}}" content="{{noMoreText}}" align="center" />
+        </block>
+    </block>
+</view>

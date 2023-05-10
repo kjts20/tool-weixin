@@ -38,6 +38,16 @@ const { join } = require('path');
         console.error('custom-tab-bar文件夹“' + toCustomTabbarFolder.replace(projetFolder, '') + '”已经存在');
     }
 
+    // 复制公共组件
+    const customComponentFlolder = join(binFolder, 'src/components');
+    const toCustomComponentFolder = join(mpRoot, 'components');
+    if (!fs.existsSync(toCustomComponentFolder)) {
+        fs.mkdirSync(toCustomComponentFolder, { recursive: true });
+        copyFolderOrFile(customComponentFlolder, toCustomComponentFolder);
+    } else {
+        console.error('components文件夹“' + toCustomComponentFolder.replace(projetFolder, '') + '”已经存在');
+    }
+
     // 复制lib文件（系统核心文件）
     const sysLibFlolder = join(binFolder, 'src/lib');
     const toSysLibFolder = join(mpRoot, 'lib');

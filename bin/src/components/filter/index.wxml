@@ -1,0 +1,30 @@
+<!-- 过滤组件 -->
+<view class="wr-class filter-wrap">
+    <view class="filter-left-content">
+        <block wx:for="{{colums}}" wx:key="index">
+            <view class="filter-item" bind:tap="onSort" data-column="{{item.column}}">
+                <text style="color: {{sort.column == item.column ? selectColor : ''}}">{{item.title}}</text>
+                <view wx:if="{{item.column}}" class="filter-icon-group">
+                    <t-icon
+                            prefix="wr"
+                            name="arrow_drop_up"
+                            size="18rpx"
+                            style="color:{{sort.column == item.column && sort.value === sortEnum.ASC ? selectColor : '#bbb'}}" />
+                    <t-icon
+                            prefix="wr"
+                            name="arrow_drop_down"
+                            size="18rpx"
+                            style="color:{{sort.column == item.column && sort.value === sortEnum.DESC ? selectColor : '#bbb'}}" />
+                </view>
+            </view>
+        </block>
+        <block wx:if="{{showFilter}}">
+            <view class="filter-item" bindtap="showFilterPopup">
+                <text style="padding-right: 8rpx">筛选</text>
+                <t-icon prefix="wr" name="filter" />
+            </view>
+        </block>
+    </view>
+</view>
+<!-- 筛选弹框 -->
+<slot wx:if="{{showFilter}}" name="filterPopup" />

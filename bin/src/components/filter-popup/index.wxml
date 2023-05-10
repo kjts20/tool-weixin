@@ -1,0 +1,8 @@
+<t-popup visible="{{visible}}"
+         placement="right"
+         bind:visible-change="close"
+         close-btn="{{closeBtn}}">
+    <view class="content">
+        <slot></slot>
+    </view>
+</t-popup>
