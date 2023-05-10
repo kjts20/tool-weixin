@@ -11,12 +11,12 @@ Component({
             type: String,
             observer(name) {
                 // 获取权限相关信息
-                const powserVal = getPower(name);
+                const powerVal = getPower(name);
                 // 没有设置就是没有权限
-                const hasAuth = !isUndefined(powserVal);
+                const hasAuth = !isUndefined(powerVal);
                 this.setData({ init: true, hasAuth }, () => {
                     if (hasAuth) {
-                        this.triggerEvent('auth', { name, value: toJson(powserVal) });
+                        this.triggerEvent('auth', { name, value: toJson(powerVal) });
                     } else {
                         this.triggerEvent('no-auth', { name });
                     }

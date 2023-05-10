@@ -2,12 +2,12 @@ import { biList2Dict } from '@kjts20/tool';
 import { storage } from '@kjts20/tool-weixin-mp';
 
 // 权限字段
-const powerKey = 'system-powser';
+const powerKey = 'system-power';
 
 // 设置权限
-export const setPowserFromApi = function () {
+export const setPowerFromApi = function () {
     setTimeout(() => {
-        const powserList = [
+        const powerList = [
             {
                 type: 'custom',
                 name: 'controlMenu',
@@ -25,9 +25,9 @@ export const setPowserFromApi = function () {
             }
         ];
         storage.setStorageSync(
-            powserKey,
+            powerKey,
             biList2Dict(
-                powserList,
+                powerList,
                 it => `${it.type}.${it.name}`,
                 it => it.value
             )
@@ -36,12 +36,12 @@ export const setPowserFromApi = function () {
 };
 
 // 清除权限
-export const clearPowser = function () {
+export const clearPower = function () {
     return storage.removeStorage(powerKey);
 };
 
 // 获取权限
-export const getPowser = function (powserName) {
-    const powserDict = storage.getStorageSync(powerKey) || {};
-    return powserDict[powserName];
+export const getPower = function (powerName) {
+    const powerDict = storage.getStorageSync(powerKey) || {};
+    return powerDict[powerName];
 };

@@ -88,7 +88,7 @@ const { join } = require('path');
             route: 'node cli/cmd.js type=route',
             initapp: 'node cli/cmd.js type=initapp',
             document: 'node cli/document/index.js miniprogram',
-            power: 'node cli/power.js miniprogram',
+            power: 'node cli/power/index.js miniprogram',
             project: 'node cli/cmd.js type=project miniprogram',
             'env:prod': 'node cli/cmd.js type=changeEnv env=prod',
             'env:pre': 'node cli/cmd.js type=changeEnv env=pre',
