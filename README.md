@@ -91,6 +91,21 @@ App<IAppOption>({
 npm run document
 ```
 
+### 开发说明
+
+#### 创建表单页面
+
+请求名称从请求的 service 文件中查找，请求添加名称一般是：xxxAdd，分页请求名称一般是：xxxGetPage
+
+```
+// yarn page:form [请求添加名称] [路径名称]
+yarn page:form sysMessageAdd  /pages/index3
+
+// yarn page:paging [请求分页名称] [路径名称]
+yarn page:form sysMessageGetPage  /pages/index3
+//
+```
+
 ### 注意事项
 
 #### 页面路径变化需要执行： `npm run route` 进行更新路由文件（包括 tabar 列表）
