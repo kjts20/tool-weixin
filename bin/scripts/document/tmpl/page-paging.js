@@ -214,7 +214,6 @@ Page({
 };
 
 const toPageWxml = (sortProperties, responseProperties) => {
-    console.log('toPageWxml=>', responseProperties);
     const sorts = [{ name: '', description: '综合' }, ...sortProperties];
     return `<custom-page>
     <view class="block-self">
@@ -223,7 +222,7 @@ const toPageWxml = (sortProperties, responseProperties) => {
         </view>
         <filter
                 bind:sour="handleFilterChange"
-                columns="{{ [${sorts.map((it) => `{column: '${it.name}', title: '${it.description}'}`).join(', ')}] }}"
+                columns="{{ [${sorts.map(it => `{column: '${it.name}', title: '${it.description}'}`).join(', ')}] }}"
                 bind:sort="onSort"
                 bind:showFilterWin="showFilterWin">
             <filter-popup slot="filterPopup" show="{{filterWinStatus}}" bind:close="hideFilterWin">
@@ -241,7 +240,7 @@ const toPageWxml = (sortProperties, responseProperties) => {
                                     bind:scrolltolower="onReachBottom"
                                     bind:scroll="onScroll">
                 <view wx:for="{{pagingData}}" wx:key="index" class="font-32 padding-20-30 bg-white margin-top-20">
-                    ${responseProperties.map((it) => `<view>${it.description}：{{item.${it.name}}}</view>`).join('\r\n                    ')}
+                    ${responseProperties.map(it => `<view>${it.description}：{{item.${it.name}}}</view>`).join('\r\n                    ')}
                 </view>
                 <t-back-top wx:if="{{backTopVisible}}" text="顶部" />
                 <load-more waiting="{{waiting}}" paging="{{pagingStatus}}" bind:retry="onReachBottom" />
@@ -252,7 +251,7 @@ const toPageWxml = (sortProperties, responseProperties) => {
 `;
 };
 
-const toPageJson = (title) => `
+const toPageJson = title => `
 {
     "navigationBarTitleText": "${title || 'xxx'}",
     "usingComponents": {
@@ -324,9 +323,7 @@ const toFilterWxml = (properties, responseType) => `
     <scroll-view class="height--120" scroll-y>
         <view class="padding-bottom-30">
             ${properties
-                .map(
-                    (it) => `<t-input label="${it.description}" name="${it.name}" value="{{formData.${it.name}}}" placeholder="请输入${it.description}" status="error" tips="{{formErr.${it.name}}}"/>`
-                )
+                .map(it => `<t-input label="${it.description}" name="${it.name}" value="{{formData.${it.name}}}" placeholder="请输入${it.description}" status="error" tips="{{formErr.${it.name}}}"/>`)
                 .join('\r\n            ')}
         </view>
     </scroll-view>
