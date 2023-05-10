@@ -1,29 +1,14 @@
 import { biList2Dict } from '@kjts20/tool';
-import { storage } from '@kjts20/tool-weixin-mp';
+import { resFilter, storage } from '@kjts20/tool-weixin-mp';
+import { powerGetUserPowerList } from '@/services/apis/baseService/PowerController';
 
 // 权限字段
 const powerKey = 'system-power';
 
 // 设置权限
 export const setPowerFromApi = function () {
-    setTimeout(() => {
-        const powerList = [
-            {
-                type: 'custom',
-                name: 'controlMenu',
-                value: `[{"icon": "home", "text":"首页", "path":"/pages/index/index"}]`
-            },
-            {
-                type: 'custom',
-                name: 'indexBabber',
-                value: `["http://www.ts20.cn/ttt.png"]`
-            },
-            {
-                type: 'system',
-                name: 'productSalePrice',
-                value: 'true'
-            }
-        ];
+    resFilter.unifyRemind(powerGetUserPowerList()).then(list => {
+        const powerList = (list || []).filter(it => it && it.status).map(({ type, name, value }) => ({ type, name, value }));
         storage.setStorageSync(
             powerKey,
             biList2Dict(
@@ -32,7 +17,7 @@ export const setPowerFromApi = function () {
                 it => it.value
             )
         );
-    }, 2000);
+    });
 };
 
 // 清除权限

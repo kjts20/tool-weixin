@@ -2,7 +2,7 @@ const { projectBaseUrl, swaggerApiList } = require('./config');
 const { writeJson, lineTag, tabTag, writeFile } = require('../utils/file');
 const { get } = require('../utils/request');
 const { list2dict, listGroupBy, dict2List } = require('../utils/object');
-const { firstLowerCase, firstUpperCase } = require('../utils/string');
+const { firstLowerCase, firstUpperCase, toJsName } = require('../utils/string');
 const { join } = require('path');
 
 /**
@@ -25,27 +25,6 @@ const format2validateDict = {
     'date-time': 'validateDate',
     int32: 'validateInt',
     int64: 'validateInt'
-};
-
-/**
- * js名字冲突
- */
-const jsNameConflict = {
-    delete: 'del'
-};
-
-/**
- * 生成js命名
- * @param {名字} name
- * @returns
- */
-const toJsName = function (name) {
-    // 过滤非法字符
-    const namePart = [];
-    name.replace(/[a-zA-Z0-9\_\$]+/g, $0 => namePart.push($0));
-    const nameStr = namePart.join('');
-    // 过滤关键字
-    return jsNameConflict[nameStr] || nameStr;
 };
 
 /**

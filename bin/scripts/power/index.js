@@ -1,5 +1,6 @@
 const { getPowerList } = require('./config');
 const { lineTag, tabTag, writeFile } = require('../utils/file');
+const { toJsName } = require('../utils/string');
 const { get } = require('../utils/request');
 
 /**
@@ -29,7 +30,7 @@ const getPowerData = async function () {
  */
 const writePowerFile = function (fileName, systemList, customList) {
     const toItemTmpl = function (item) {
-        return [`${tabTag}// ${item.description}`, `${tabTag}${item.name}: '${item.type}.${item.name}'`].join(lineTag);
+        return [`${tabTag}// ${item.description}`, `${tabTag}${toJsName(item.name)}: '${item.type}.${item.name}'`].join(lineTag);
     };
     const toSectionTmpl = function (name, description, powerList) {
         return ['/**', ' * ' + description, ' */', `export const ${name}Power = {`, powerList.map(it => toItemTmpl(it)).join(',' + lineTag), '};'].join(lineTag);

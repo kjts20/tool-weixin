@@ -24,7 +24,29 @@ var firstLowerCase = function (str) {
     }
 };
 
+/**
+ * js语法冲突
+ */
+const jsSyntaxConflict = {
+    delete: 'del'
+};
+
+/**
+ * 生成js命名
+ * @param {名字} name
+ * @returns
+ */
+const toJsName = function (name) {
+    // 过滤非法字符
+    const namePart = [];
+    name.replace(/\-([a-z])/g, (_, $1) => $1.toUpperCase()).replace(/[a-zA-Z0-9\_\$]+/g, $0 => namePart.push($0));
+    const nameStr = namePart.join('');
+    // 过滤关键字
+    return jsSyntaxConflict[nameStr] || nameStr;
+};
+
 module.exports = {
     firstLowerCase: firstLowerCase,
-    firstUpperCase: firstUpperCase
+    firstUpperCase: firstUpperCase,
+    toJsName: toJsName
 };
