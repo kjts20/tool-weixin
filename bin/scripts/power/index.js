@@ -37,7 +37,9 @@ const writePowerFile = function (fileName, systemList, customList) {
     writeFile(fileName, [toSectionTmpl('system', '系统权限', systemList), toSectionTmpl('custom', '自定义权限', customList)].join(lineTag.repeat(2)));
 };
 
-// 启动函数
+/**
+ * 作用： 通过后端获取所有的权限，并且把所有的权限名字写入配置文件中供权限组件使用
+ */
 (async function (rootDir) {
     try {
         // 获取权限菜单
