@@ -74,7 +74,9 @@ const { join } = require('path');
             'env:pre': 'node cli/cmd.js type=changeEnv env=pre',
             'env:dev': 'node cli/cmd.js type=changeEnv env=dev',
             'env:test': 'node cli/cmd.js type=changeEnv env=test',
-            initp: 'npm i && npm run project &&  npm run initapp'
+            initp: 'npm i && npm run project &&  npm run initapp',
+            'page:paging': 'node cli/document/command.js paging',
+            'page:form': 'node cli/document/command.js form'
         };
         for (const key in allScripts) {
             packageJson.scripts[key] = allScripts[key];

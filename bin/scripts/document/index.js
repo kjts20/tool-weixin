@@ -19,6 +19,15 @@ const type2tsDict = {
 };
 
 /**
+ * [字典]format-校验
+ */
+const format2validateDict = {
+    'date-time': 'validateDate',
+    int32: 'validateInt',
+    int64: 'validateInt'
+};
+
+/**
  * js名字冲突
  */
 const jsNameConflict = {
@@ -106,10 +115,14 @@ const toTypesList = function (definitions, beanGenericityList) {
                 if (!useType) {
                     console.error('类型无法解析=>>', it, noteIt);
                 }
+                // 格式校验
+                const format = it?.format || it?.items?.format || null;
                 return {
                     required: Array.isArray(requiredAttrs) ? requiredAttrs.includes(name) : true,
                     type: useType,
                     name,
+                    format,
+                    validate: format2validateDict[format] || null,
                     description
                 };
             })
@@ -217,7 +230,7 @@ const toRequestList = function (tags, paths) {
             requestList.push({
                 requestUrl: url,
                 fileName,
-                name: firstLowerCase(toJsName(fileName.replace(/^(.*?)controller$/i, '$1'))) + firstUpperCase(toJsName(name)),
+                name: toJsName(firstLowerCase(fileName.replace(/^(.*?)controller$/i, '$1')) + firstUpperCase(name)),
                 type,
                 description: summary,
                 params: (parameters || []).map((it) => {
@@ -353,13 +366,16 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
             });
             return dict2List(list2dict(typeList, (it) => it));
         })();
-
+        // 子项
+        const itemsContent = requestList.map((requestItem) => toRequestItemTmpl(requestItem)).join(lineTag);
         return [
             `import {HttpResponse, mergeUrl } from '@kjts20/tool';`,
             `import {httpServer } from '@kjts20/tool-weixin-mp';`,
-            `import {${useTypeList.join(', ')}} from '${typeFile}';`,
-            requestList.map((requestItem) => toRequestItemTmpl(requestItem)).join(lineTag)
-        ].join(lineTag);
+            useTypeList.length > 0 ? `import {${useTypeList.join(', ')}} from '${typeFile}';` : null,
+            itemsContent
+        ]
+            .filter((it) => it)
+            .join(lineTag);
     };
     const requestFileDict = listGroupBy(requestList, (it) => it.fileName);
     for (const fileName in requestFileDict) {
@@ -413,14 +429,27 @@ const toFormValidateList = function (serviceList, typeList) {
  * @param {校验文件} validataList
  */
 const writeFormValidateFile = function (fileName, validataList) {
+    const validateList = [];
     const toItemParamsTmpl = function (param) {
-        return `{column: '${param.name}', title: '${param.description}', validate: [${param.required ? 'validateRequired' : ''}]}`;
+        const validates = [];
+        // 是否必填
+        if (param.required) {
+            validateList.push('validateRequired');
+            validates.push('validateRequired');
+        }
+        // 格式校验
+        if (param.validate) {
+            validateList.push(param.validate);
+            validates.push(param.validate);
+        }
+        return `{column: '${param.name}', title: '${param.description}', validate: [${validates.join(', ')}]}`;
     };
     const toItemTmpl = function (item) {
         return [`// ${item.description}`, `export const ${item.validateName} = [`, item.properties.map((it) => tabTag + toItemParamsTmpl(it)).join(',' + lineTag), '];'].join(lineTag);
     };
     const toFileTmpl = function (list) {
-        return ['import { validateRequired } from "@kjts20/tool";', ...list.map((it) => toItemTmpl(it))].join(lineTag.repeat(2));
+        const itemsContents = list.map((it) => toItemTmpl(it));
+        return [`import { ${Array.from(new Set(validateList)).join(', ')} } from "@kjts20/tool";`, ...itemsContents].join(lineTag.repeat(2));
     };
     writeFile(fileName, toFileTmpl(validataList));
 };
@@ -433,7 +462,6 @@ const generateTypesAndServiceList = async function (projectRoot = 'miniprogram')
     // 获取项目基础信息
     const { data: projectSetting } = await get(projectBaseUrl);
     const { selectorOptionBeanList, beanGenericityList, selectorMapperItemList } = projectSetting;
-    const typeAndServiceTypeList = [];
     const serviceRoot = 'services';
     const typeRoot = `types`;
     const apiRoot = `apis`;
@@ -449,21 +477,39 @@ const generateTypesAndServiceList = async function (projectRoot = 'miniprogram')
         }
         const { tags, paths, definitions } = document;
 
+        // 生成service
+        const serviceList = toRequestList(tags, paths);
+
         // 生成类型数据
-        const typeList = typeDecorate(toTypesList(definitions, beanGenericityList), selectorMapperItemList, selectorOptionBeanList);
+        const typeListSource = toTypesList(definitions, beanGenericityList);
+        const typeWithMapper = typeDecorate(typeListSource, selectorMapperItemList, selectorOptionBeanList);
+        const typeList = (function (types, services) {
+            // 请求中可选参数的对象获取
+            const noRequiredTypes = [];
+            services.forEach((service) => {
+                service?.params?.forEach((param) => {
+                    if (param && param.in === 'body' && !param.required && !noRequiredTypes.includes(param.type)) {
+                        noRequiredTypes.push(param.type);
+                    }
+                });
+            });
+            // 可选参数对象获取
+            return types.map((it) => {
+                if (noRequiredTypes.includes(it.name) && !it.required) {
+                    it.required = [];
+                    it.properties.forEach((propertie) => {
+                        propertie.required = false;
+                    });
+                }
+                return it;
+            });
+        })(typeWithMapper, serviceList);
+
         // 写入类型文件
         const typeDecrption = ['/*', ' * @author: sskj-generator', ` * @description: ${apiInfo.description}`, ` * @url: ${apiInfo.docUrl}`, ' */'].join(lineTag);
         const typeFileName = `${typeRoot}/${apiInfo.name}`;
         writeTypeFile(`${projectRoot}/${serviceRoot}/${typeFileName}.ts`, typeDecrption, typeList);
 
-        // 生成service
-        const serviceList = toRequestList(tags, paths);
-        typeAndServiceTypeList.push({
-            ...apiInfo,
-            document,
-            typeList,
-            serviceList
-        });
         // 写入service文件
         writeReqestFile(`${projectRoot}/${serviceRoot}/${apiRoot}/${apiInfo.name}`, `../../${typeFileName}`, serviceList);
 
