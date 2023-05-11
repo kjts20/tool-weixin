@@ -30,20 +30,18 @@ Page({
         }
     },
     onReset() {
-        this.setData({ formData: {}, formErr: {} });
+        this.setData({ formData: {}, formErr: {}, version: Math.random() });
     }
 });
 `;
 };
 
-const toFormWxml = (requestProperties) => {
+const toFormWxml = requestProperties => {
     return `<custom-page>
     <form bindsubmit="onSubmit" bindreset="onReset">
         <scroll-view class="height--120" scroll-y>
             ${requestProperties
-                .map(
-                    (it) => `<t-input label="${it.description}" value="{{formData.${it.name}}}" name="${it.name}"  placeholder="请输入${it.description}" status="error" tips="{{formErr.${it.name}}}"/>`
-                )
+                .map(it => `<t-input label="${it.description}" value="{{formData.${it.name}}}" name="${it.name}"  placeholder="请输入${it.description}" status="error" tips="{{formErr.${it.name}}}"/>`)
                 .join('\r\n            ')}
         </scroll-view>
         <view class="height-120 padding-20-30">
@@ -56,7 +54,7 @@ const toFormWxml = (requestProperties) => {
 </custom-page>`;
 };
 
-const toFormJson = (title) => `{
+const toFormJson = title => `{
     "navigationBarTitleText": "${title}",
     "usingComponents": {
         "t-input": "tdesign-miniprogram/input/input"

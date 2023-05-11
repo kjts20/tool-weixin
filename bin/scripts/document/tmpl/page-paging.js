@@ -94,6 +94,7 @@ Page({
                     pagingStatus: {
                         ...paging,
                         current: curPage,
+                        pageSize,
                         hasMore: total > curPage * pageSize,
                         empty: total <= 0
                     },
