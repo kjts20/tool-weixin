@@ -19,6 +19,11 @@ const type2tsDict = {
 };
 
 /**
+ * 输入框类型字典
+ */
+const intTypeList = ['int32', 'int64'];
+const dateTypeList = ['date-time'];
+/**
  * [字典]format-校验
  */
 const format2validateDict = {
@@ -100,11 +105,24 @@ const toTypesList = function (definitions, beanGenericityList) {
                 if (!useType) {
                     console.error('类型无法解析=>>', it, noteIt);
                 }
+                const format = it?.format || it?.items?.format || null;
                 return {
                     required: Array.isArray(requiredAttrs) ? requiredAttrs.includes(name) : true,
                     type: useType,
                     name,
-                    format: it?.format || it?.items?.format || null,
+                    valueType: (function () {
+                        const isArray = /^Array<.*?>$/.test(useType);
+                        const isInt = intTypeList.includes(format);
+                        const isDate = dateTypeList.includes(format);
+                        return {
+                            isArray,
+                            isInt: isArray ? false : isInt,
+                            isIntArr: isArray ? isInt : false,
+                            isDate: isArray ? false : isDate,
+                            isDateArr: isArray ? isDate : false
+                        };
+                    })(),
+                    format,
                     description
                 };
             })
@@ -401,20 +419,16 @@ const toFormValidateList = function (serviceList, typeList) {
                     ...typeObj,
                     properties: properties.map(param => {
                         const validates = [];
-                        const { type, required, format } = param;
+                        const { required, format, valueType } = param;
                         // 校验规则
-                        const isArr = /^Array<.*?>$/.test(type);
+                        const { isArray } = valueType;
                         // 是否必填
                         if (required) {
-                            if (isArr) {
-                                validates.push('validateArrRequired');
-                            } else {
-                                validates.push('validateRequired');
-                            }
+                            validates.push(isArray ? 'validateArrRequired' : 'validateRequired');
                         }
                         // 格式校验
                         if (format) {
-                            const validate = (isArr ? format2ArrValidateDict : format2validateDict)[format] || null;
+                            const validate = (isArray ? format2ArrValidateDict : format2validateDict)[format] || null;
                             if (validate) {
                                 validates.push(validate);
                             } else {
@@ -423,6 +437,7 @@ const toFormValidateList = function (serviceList, typeList) {
                         }
                         return {
                             ...param,
+                            isArray,
                             validates
                         };
                     }),

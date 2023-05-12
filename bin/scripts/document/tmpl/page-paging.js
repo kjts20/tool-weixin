@@ -94,7 +94,6 @@ Page({
                     pagingStatus: {
                         ...paging,
                         current: curPage,
-                        pageSize,
                         hasMore: total > curPage * pageSize,
                         empty: total <= 0
                     },
@@ -274,7 +273,6 @@ const toFilterTs = (paramsType, responseType, document, validate) => {
     return `import { isObj, isStr,validateForm } from '@kjts20/tool';
 import { ${validate.validateName} } from '@/services/validates/${document.name}';
 
-
 Component({
     options: {
         styleIsolation: 'apply-shared'
@@ -319,13 +317,27 @@ Component({
 `;
 };
 
-const toFilterWxml = (properties, responseType) => `
+const toFilterWxml = (properties, responseType) => {
+    const params = properties.map(it => {
+        const { valueType } = it;
+        if (valueType.isDateArr) {
+            return `<form-date-range label="${it.description}" name="${it.name}" value="{{formData.${it.name}}}" placeholder="请输入${it.description}" status="error" tips="{{formErr.${it.name}}}"/>`;
+        } else if (valueType.isArray) {
+            return `<form-value-array label="${it.description}" name="${it.name}" value="{{formData.${it.name}}}" list="{{ [{}] }}" placeholder="请输入${it.description}" status="error" tips="{{formErr.${it.name}}}"/>`;
+        }
+        if (valueType.isDate) {
+            return `<form-date label="${it.description}" name="${it.name}" value="{{formData.${it.name}}}" placeholder="请输入${it.description}" status="error" tips="{{formErr.${it.name}}}"/>`;
+        } else if (valueType.isInt) {
+            return `<t-input label="${it.description}" name="${it.name}" value="{{formData.${it.name}}}" type="number" placeholder="请输入${it.description}" status="error" tips="{{formErr.${it.name}}}"/>`;
+        } else {
+            return `<t-input label="${it.description}" name="${it.name}" value="{{formData.${it.name}}}" placeholder="请输入${it.description}" status="error" tips="{{formErr.${it.name}}}"/>`;
+        }
+    });
+    return `
 <form class="block-self" bindsubmit="onSubmit" bindreset="onReset">
     <scroll-view class="height--120" scroll-y>
         <view class="padding-bottom-30">
-            ${properties
-                .map(it => `<t-input label="${it.description}" name="${it.name}" value="{{formData.${it.name}}}" placeholder="请输入${it.description}" status="error" tips="{{formErr.${it.name}}}"/>`)
-                .join('\r\n            ')}
+            ${params.join('\r\n            ')}
         </view>
     </scroll-view>
     <view class="height-120 padding-20-30">
@@ -336,6 +348,7 @@ const toFilterWxml = (properties, responseType) => `
     </view>
 </form>
 `;
+};
 const toFilterJson = (paramsType, responseType) => `{
     "component": true,
     "usingComponents": {

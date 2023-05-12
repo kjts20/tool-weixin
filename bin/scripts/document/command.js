@@ -112,6 +112,9 @@ const generateformPage = function (projectRoot, fileDirName, requestInfo) {
 
     // 请求类型检查
     const documentList = readJson(join(scriptRoot, 'note.json'));
+    if (!Array.isArray(documentList)) {
+        throw new Error('文档没有生成，请生成文档之后再创建页面！！！');
+    }
 
     const getRequestInfo = function (filterFunc, toRequestName) {
         const list = documentList;
