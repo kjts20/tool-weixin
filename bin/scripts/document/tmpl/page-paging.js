@@ -1,3 +1,4 @@
+const { list2dict, dict2List } = require('../../utils/object');
 const toPageTs = (paramsType, responseType, document, service) => {
     return `import { error, resFilter } from '@kjts20/tool-weixin-mp';
 import { defaultPaging, IKeyVal, isFunc, isStr, objFilter } from '@kjts20/tool';
@@ -222,7 +223,7 @@ const toPageWxml = (sortProperties, responseProperties) => {
         </view>
         <filter
                 bind:sour="handleFilterChange"
-                columns="{{ [${sorts.map(it => `{column: '${it.name}', title: '${it.description}'}`).join(', ')}] }}"
+                columns="{{ [${sorts.map((it) => `{column: '${it.name}', title: '${it.label}'}`).join(', ')}] }}"
                 bind:sort="onSort"
                 bind:showFilterWin="showFilterWin">
             <filter-popup slot="filterPopup" show="{{filterWinStatus}}" bind:close="hideFilterWin">
@@ -240,7 +241,7 @@ const toPageWxml = (sortProperties, responseProperties) => {
                                     bind:scrolltolower="onReachBottom"
                                     bind:scroll="onScroll">
                 <view wx:for="{{pagingData}}" wx:key="index" class="font-32 padding-20-30 bg-white margin-top-20">
-                    ${responseProperties.map(it => `<view>${it.description}：{{item.${it.name}}}</view>`).join('\r\n                    ')}
+                    ${responseProperties.map((it) => `<view>${it.label}：{{item.${it.name}}}</view>`).join('\r\n                    ')}
                 </view>
                 <t-back-top wx:if="{{backTopVisible}}" text="顶部" />
                 <load-more waiting="{{waiting}}" paging="{{pagingStatus}}" bind:retry="onReachBottom" />
@@ -251,7 +252,7 @@ const toPageWxml = (sortProperties, responseProperties) => {
 `;
 };
 
-const toPageJson = title => `
+const toPageJson = (title) => `
 {
     "navigationBarTitleText": "${title || 'xxx'}",
     "usingComponents": {
@@ -318,19 +319,19 @@ Component({
 };
 
 const toFilterWxml = (properties, responseType) => {
-    const params = properties.map(it => {
-        const { valueType } = it;
+    const params = properties.map((it) => {
+        const { valueType, enumValues } = it;
         if (valueType.isDateArr) {
-            return `<form-date-range label="${it.description}" name="${it.name}" value="{{formData.${it.name}}}" placeholder="请输入${it.description}" status="error" tips="{{formErr.${it.name}}}"/>`;
-        } else if (valueType.isArray) {
-            return `<form-value-array label="${it.description}" name="${it.name}" value="{{formData.${it.name}}}" list="{{ [{}] }}" placeholder="请输入${it.description}" status="error" tips="{{formErr.${it.name}}}"/>`;
-        }
-        if (valueType.isDate) {
-            return `<form-date label="${it.description}" name="${it.name}" value="{{formData.${it.name}}}" placeholder="请输入${it.description}" status="error" tips="{{formErr.${it.name}}}"/>`;
+            return `<form-date-range label="${it.label}" name="${it.name}" value="{{formData.${it.name}}}" placeholder="请输入${it.label}" status="error" tips="{{formErr.${it.name}}}"/>`;
+        } else if (valueType.isArray || Array.isArray(enumValues)) {
+            const enumVals = (Array.isArray(enumValues) ? enumValues : []).map((it) => `{name: '${it.name}', value: '${it.value}'}`).join(', ');
+            return `<form-value-array label="${it.label}" name="${it.name}" value="{{formData.${it.name}}}" list="{{ [${enumVals}] }}" placeholder="请输入${it.label}" status="error" tips="{{formErr.${it.name}}}"/>`;
+        } else if (valueType.isDate) {
+            return `<form-date label="${it.label}" name="${it.name}" value="{{formData.${it.name}}}" placeholder="请输入${it.label}" status="error" tips="{{formErr.${it.name}}}"/>`;
         } else if (valueType.isInt) {
-            return `<t-input label="${it.description}" name="${it.name}" value="{{formData.${it.name}}}" type="number" placeholder="请输入${it.description}" status="error" tips="{{formErr.${it.name}}}"/>`;
+            return `<t-input label="${it.label}" name="${it.name}" value="{{formData.${it.name}}}" type="number" placeholder="请输入${it.label}" status="error" tips="{{formErr.${it.name}}}"/>`;
         } else {
-            return `<t-input label="${it.description}" name="${it.name}" value="{{formData.${it.name}}}" placeholder="请输入${it.description}" status="error" tips="{{formErr.${it.name}}}"/>`;
+            return `<t-input label="${it.label}" name="${it.name}" value="{{formData.${it.name}}}" placeholder="请输入${it.label}" status="error" tips="{{formErr.${it.name}}}"/>`;
         }
     });
     return `
@@ -349,16 +350,28 @@ const toFilterWxml = (properties, responseType) => {
 </form>
 `;
 };
-const toFilterJson = (paramsType, responseType) => `{
+const toFilterJson = (properties, responseType) => {
+    const useComponents = [];
+    properties.forEach((it) => {
+        const { valueType, enumValues } = it;
+        if (valueType.isDateArr) {
+            useComponents.push('"form-date-range": "xxx"');
+        } else if (valueType.isArray || Array.isArray(enumValues)) {
+            useComponents.push('"form-value-array": "xxx"');
+        } else if (valueType.isDate) {
+            useComponents.push('"form-date": "xxx"');
+        } else {
+            useComponents.push(' "t-input": "tdesign-miniprogram/input/input"');
+        }
+    });
+    return `{
     "component": true,
     "usingComponents": {
-        "t-input": "tdesign-miniprogram/input/input"
+        ${dict2List(list2dict(useComponents, (it) => it)).join(',\r\n         ')}
     }
-}
-
-`;
+}`;
+};
 const toFilterScss = (paramsType, responseType) => `
-
 `;
 
 module.exports = {

@@ -13,11 +13,11 @@ const sortColumnTag = 'Sort';
 // 排除字段
 const excludeColumns = ['version', 'remark1', 'pageSize', 'id', 'updateUserId', 'createUserId', 'current', 'deleted', 'updateTime', 'sort'];
 // 生成筛选字段
-const toFilterColumns = columns => (columns || []).filter(it => it?.name && !excludeColumns.includes(it.name) && !it.name.endsWith(sortColumnTag));
+const toFilterColumns = (columns) => (columns || []).filter((it) => it?.name && !excludeColumns.includes(it.name) && !it.name.endsWith(sortColumnTag));
 // 生成筛选字段
-const toSortColumns = columns => (columns || []).filter(it => it?.name && it.name.endsWith(sortColumnTag));
+const toSortColumns = (columns) => (columns || []).filter((it) => it?.name && it.name.endsWith(sortColumnTag));
 // 生成响应字段
-const toResponseColumns = columns => (columns || []).filter(it => it?.name && !excludeColumns.includes(it.name));
+const toResponseColumns = (columns) => (columns || []).filter((it) => it?.name && !excludeColumns.includes(it.name));
 
 // 生成页面Ts、wxml、json、scss文件
 const generatePageFile = function (fileDirName, paramsType, responseType, document, service) {
@@ -28,7 +28,7 @@ const generatePageFile = function (fileDirName, paramsType, responseType, docume
     // fiter组件
     const { validateList } = document;
     const filterDir = 'filter';
-    writeFile(join(fileDirName, filterDir, [defaultFileName, 'ts'].join('.')), toFilterTs(paramsType, responseType, document, list2dict(validateList, it => it.name)[paramsType.name]));
+    writeFile(join(fileDirName, filterDir, [defaultFileName, 'ts'].join('.')), toFilterTs(paramsType, responseType, document, list2dict(validateList, (it) => it.name)[paramsType.name]));
     writeFile(join(fileDirName, filterDir, [defaultFileName, 'scss'].join('.')), toFilterScss(toFilterColumns(paramsType.properties), responseType));
     writeFile(join(fileDirName, filterDir, [defaultFileName, 'json'].join('.')), toFilterJson(toFilterColumns(paramsType.properties), responseType));
     writeFile(join(fileDirName, filterDir, [defaultFileName, 'wxml'].join('.')), toFilterWxml(toFilterColumns(paramsType.properties), responseType));
@@ -71,10 +71,11 @@ const generatePaging = function (projectRoot, fileDirName, requestInfo) {
 // 生成表单页面Ts、wxml、json、scss文件
 const generateFormPageFile = function (fileDirName, paramsType, responseType, document, service) {
     const { validateList } = document;
-    writeFile(join(fileDirName, [defaultFileName, 'ts'].join('.')), toFormTs(paramsType, document, service, list2dict(validateList, it => it.name)[paramsType.name]));
+    const properties = paramsType.properties.filter((it) => !excludeColumns.includes(it.name));
+    writeFile(join(fileDirName, [defaultFileName, 'ts'].join('.')), toFormTs(paramsType, document, service, list2dict(validateList, (it) => it.name)[paramsType.name]));
     writeFile(join(fileDirName, [defaultFileName, 'scss'].join('.')), toFormScss(paramsType, responseType));
-    writeFile(join(fileDirName, [defaultFileName, 'json'].join('.')), toFormJson(paramsType.description));
-    writeFile(join(fileDirName, [defaultFileName, 'wxml'].join('.')), toFormWxml(paramsType.properties.filter(it => !excludeColumns.includes(it.name))));
+    writeFile(join(fileDirName, [defaultFileName, 'json'].join('.')), toFormJson(paramsType.description, properties));
+    writeFile(join(fileDirName, [defaultFileName, 'wxml'].join('.')), toFormWxml(properties));
 };
 
 // 写入表单文件
@@ -126,14 +127,14 @@ const generateformPage = function (projectRoot, fileDirName, requestInfo) {
                 for (const service of document.serviceList) {
                     if (service.name === serverName) {
                         const { response, params } = service;
-                        const requestParams = params.find(it => it.in === 'body');
+                        const requestParams = params.find((it) => it.in === 'body');
                         if (filterFunc(service, requestParams)) {
                             // 响应类型
                             const responseTypeName = toRequestName(response);
                             // 请求类型
                             const requestTypeName = requestParams.type;
                             // 获取类型列表
-                            const typeNameDict = list2dict(document.typeList, it => it.name);
+                            const typeNameDict = list2dict(document.typeList, (it) => it.name);
                             return {
                                 document,
                                 service,
@@ -158,7 +159,7 @@ const generateformPage = function (projectRoot, fileDirName, requestInfo) {
                 const { response, type } = service;
                 return resposeRe.test(response) && requestParams && type === 'postJson';
             },
-            response => response.replace(resposeRe, '$1')
+            (response) => response.replace(resposeRe, '$1')
         );
         if (requestInfo === null) {
             throw new Error('请求名字找不到或者不是分页接口！！！');
@@ -169,7 +170,7 @@ const generateformPage = function (projectRoot, fileDirName, requestInfo) {
         // 生成表单页面（使用添加请求的名字作为类型）
         const requestInfo = getRequestInfo(
             (service, requestParams) => requestParams && requestParams.required && service.type === 'put',
-            response => response
+            (response) => response
         );
         if (requestInfo === null) {
             throw new Error('请求名字找不到或者不是添加接口！！！');

@@ -23,6 +23,7 @@ const type2tsDict = {
  */
 const intTypeList = ['int32', 'int64'];
 const dateTypeList = ['date-time'];
+
 /**
  * [字典]format-校验
  */
@@ -31,6 +32,7 @@ const format2validateDict = {
     int32: 'validateInt',
     int64: 'validateInt'
 };
+
 /**
  * [字典]format-数组校验
  */
@@ -64,14 +66,14 @@ const toTypesList = function (definitions, beanGenericityList) {
         const useKey = toUseKey(key);
         const baseKey = useKey.replace(toBaseNameRe, '$1');
         const item = definitions[key];
-        const definitionAttrs = beanGenericityList.filter(it => it.beanName === baseKey);
-        const attrDict = list2dict(definitionAttrs, it => it.attr);
+        const definitionAttrs = beanGenericityList.filter((it) => it.beanName === baseKey);
+        const attrDict = list2dict(definitionAttrs, (it) => it.attr);
         // 字段是否必填（如果有required字段声明的才必填，没有required字段都是必填）
         const requiredAttrs = item.required;
         // 使用的泛型
         const useGenericityList = [];
-        definitionAttrs.forEach(it => {
-            it.useTypes.map(tit => {
+        definitionAttrs.forEach((it) => {
+            it.useTypes.map((tit) => {
                 useGenericityList.push(tit);
             });
         });
@@ -80,7 +82,7 @@ const toTypesList = function (definitions, beanGenericityList) {
             ...item,
             name: baseKey,
             useGenericityList,
-            properties: dict2List(item.properties, 'name').map(it => {
+            properties: dict2List(item.properties, 'name').map((it) => {
                 const { name, description } = it;
                 const noteIt = attrDict[name];
                 // 一般类型引用
@@ -123,12 +125,13 @@ const toTypesList = function (definitions, beanGenericityList) {
                         };
                     })(),
                     format,
+                    label: (description + '').split('：')[0],
                     description
                 };
             })
         });
     }
-    return dict2List(list2dict(allTypes, it => it.name));
+    return dict2List(list2dict(allTypes, (it) => it.name));
 };
 
 /**
@@ -138,18 +141,19 @@ const toTypesList = function (definitions, beanGenericityList) {
  * @param {选择器列表} selectorOptionList
  */
 const typeDecorate = function (typeList, selectorMapperList, selectorOptionList) {
-    const selectorMapperDict = listGroupBy(selectorMapperList, it => it.docName);
-    const selectorNameDict = list2dict(selectorOptionList, it => it.name);
-    typeList.forEach(typeIt => {
+    const selectorMapperDict = listGroupBy(selectorMapperList, (it) => it.docName);
+    const selectorNameDict = list2dict(selectorOptionList, (it) => it.name);
+    typeList.forEach((typeIt) => {
         const mapperList = selectorMapperDict[typeIt.name];
         if (Array.isArray(mapperList)) {
-            const attrDict = list2dict(mapperList, mapperIt => mapperIt.attr);
-            typeIt.properties.forEach(attrIt => {
+            const attrDict = list2dict(mapperList, (mapperIt) => mapperIt.attr);
+            typeIt.properties.forEach((attrIt) => {
                 const useAttr = attrDict[attrIt.name];
                 if (useAttr) {
                     const enumIt = selectorNameDict[useAttr.enumName];
-                    attrIt.description = enumIt.remark;
-                    attrIt.type = enumIt.values.map(it => it.value).join('|');
+                    attrIt.remark = enumIt.remark;
+                    attrIt.type = enumIt.values.map((it) => it.value).join('|');
+                    attrIt.enumValues = enumIt.values;
                 }
             });
         }
@@ -170,12 +174,12 @@ const writeTypeFile = function (fileName, description, typeList) {
     };
     // 类型模板
     const toTypeTmpl = function (typeIt) {
-        const nameAndType = `${typeIt.name}${typeIt.useGenericityList.length > 0 ? `<${typeIt.useGenericityList.map(it => `${it}=any`).join(',')}>` : ''}`;
-        const properties = `${typeIt.properties.map(it => toTypeAttrTmpl(it)).join(lineTag)}`;
+        const nameAndType = `${typeIt.name}${typeIt.useGenericityList.length > 0 ? `<${typeIt.useGenericityList.map((it) => `${it}=any`).join(',')}>` : ''}`;
+        const properties = `${typeIt.properties.map((it) => toTypeAttrTmpl(it)).join(lineTag)}`;
         return [, `// ${typeIt.description || typeIt.name}`, `export interface ${nameAndType} {`, properties, '}'].join(lineTag);
     };
     // 写入文件
-    writeFile(fileName, [`${description || '类型文件'}`, typeList.map(it => toTypeTmpl(it)).join(lineTag)].join(lineTag));
+    writeFile(fileName, [`${description || '类型文件'}`, typeList.map((it) => toTypeTmpl(it)).join(lineTag)].join(lineTag));
 };
 
 /**
@@ -187,11 +191,11 @@ const writeTypeFile = function (fileName, description, typeList) {
 const toRequestList = function (tags, paths) {
     // 标签处理（用了作为文件名称）
     const tagsDict = list2dict(
-        tags.map(it => ({
+        tags.map((it) => ({
             description: it.name,
             name: it.description.replace(/\s/g, '')
         })),
-        it => it.description
+        (it) => it.description
     );
     // 请求处理
     const requestList = [];
@@ -200,7 +204,7 @@ const toRequestList = function (tags, paths) {
         for (const method in pathItem) {
             const requestItem = pathItem[method];
             const { responses, parameters, operationId, summary, tags } = requestItem;
-            const fileName = tags.map(it => tagsDict[it]).find(it => it)?.name || 'controller';
+            const fileName = tags.map((it) => tagsDict[it]).find((it) => it)?.name || 'controller';
             const name = operationId
                 .replace(new RegExp(`^(.*?)Using${method}_\\d+$`, 'i'), (_, $1) => firstLowerCase($1))
                 .replace(new RegExp(`^(.*?)Using${method}$`, 'i'), (_, $1) => firstLowerCase($1));
@@ -208,9 +212,9 @@ const toRequestList = function (tags, paths) {
             const type = (function () {
                 if (method === 'post') {
                     if (parameters) {
-                        if (parameters.filter(it => it.in === 'body').length > 0) {
+                        if (parameters.filter((it) => it.in === 'body').length > 0) {
                             return 'postJson';
-                        } else if (parameters.filter(it => it.in === 'formData').length > 0) {
+                        } else if (parameters.filter((it) => it.in === 'formData').length > 0) {
                             return 'upload';
                         } else {
                             return 'post';
@@ -233,7 +237,7 @@ const toRequestList = function (tags, paths) {
                 name: toJsName(firstLowerCase(fileName.replace(/^(.*?)controller$/i, '$1')) + firstUpperCase(name)),
                 type,
                 description: summary,
-                params: (parameters || []).map(it => {
+                params: (parameters || []).map((it) => {
                     // 类型处理
                     const type = (function () {
                         if (it.in === 'body') {
@@ -308,25 +312,25 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
     const toRequestItemTmpl = function (requestItem) {
         // 形参字符串
         const paramsStr = (function (params) {
-            const requiredParams = params.filter(it => it.required);
-            const otherParams = params.filter(it => !it.required);
+            const requiredParams = params.filter((it) => it.required);
+            const otherParams = params.filter((it) => !it.required);
             // 使用微信文件上传
-            const toTypeStr = typeStr => (typeStr === 'File' ? 'WechatMiniprogram.MediaFile' : typeStr || 'any');
-            return [...requiredParams, ...otherParams].map(it => `${it.name}${it.required ? '' : '?'}:${toTypeStr(it.type)}`).join(', ');
+            const toTypeStr = (typeStr) => (typeStr === 'File' ? 'WechatMiniprogram.MediaFile' : typeStr || 'any');
+            return [...requiredParams, ...otherParams].map((it) => `${it.name}${it.required ? '' : '?'}:${toTypeStr(it.type)}`).join(', ');
         })(requestItem.params);
         // 请求的url与数据
-        const queryParams = requestItem.params.filter(it => it.in === 'query');
+        const queryParams = requestItem.params.filter((it) => it.in === 'query');
         const url = `'${requestItem.requestUrl}'`;
         let urlStr = url;
         let dataStr = '';
         if (requestItem.type === 'postJson' || requestItem.type === 'put') {
-            urlStr = queryParams.length > 0 ? `mergeUrl(${url}, {${queryParams.map(it => it.name).join(',')}})` : url;
-            const body = requestItem.params.find(it => it.in === 'body');
+            urlStr = queryParams.length > 0 ? `mergeUrl(${url}, {${queryParams.map((it) => it.name).join(',')}})` : url;
+            const body = requestItem.params.find((it) => it.in === 'body');
             dataStr = body ? `, ${body.name}` : '';
         } else {
-            dataStr = queryParams.length > 0 ? `, {${queryParams.map(it => it.name).join(', ')}}` : '';
+            dataStr = queryParams.length > 0 ? `, {${queryParams.map((it) => it.name).join(', ')}}` : '';
             if (requestItem.type === 'upload') {
-                const fileName = requestItem.params.find(it => it.in === 'formData' && it.type === 'File').name;
+                const fileName = requestItem.params.find((it) => it.in === 'formData' && it.type === 'File').name;
                 dataStr = `, ${fileName || null}${dataStr}`;
             }
         }
@@ -335,13 +339,13 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
             ,
             `/*`,
             ` * ${requestItem.description}`,
-            requestItem.params.map(it => ` * @param {${it.description || '*'}} ${it.name}`).join(lineTag),
+            requestItem.params.map((it) => ` * @param {${it.description || '*'}} ${it.name}`).join(lineTag),
             ' */',
             `export const ${requestItem.name} = function(${paramsStr}):Promise<${responseType}>{`,
             `${tabTag}return httpServer.${requestItem.type}(${urlStr}${dataStr});`,
             '};'
         ]
-            .filter(it => it)
+            .filter((it) => it)
             .join(lineTag);
     };
     // 生成请求文件模板
@@ -358,26 +362,26 @@ const writeReqestFile = function (saveRoot, typeFile, requestList) {
                     }
                 });
             };
-            requestList.forEach(requestItem => {
+            requestList.forEach((requestItem) => {
                 parseType(requestItem.response);
-                requestItem.params.forEach(param => {
+                requestItem.params.forEach((param) => {
                     parseType(param.type);
                 });
             });
-            return dict2List(list2dict(typeList, it => it));
+            return dict2List(list2dict(typeList, (it) => it));
         })();
         // 子项
-        const itemsContent = requestList.map(requestItem => toRequestItemTmpl(requestItem)).join(lineTag);
+        const itemsContent = requestList.map((requestItem) => toRequestItemTmpl(requestItem)).join(lineTag);
         return [
             `import {HttpResponse, mergeUrl } from '@kjts20/tool';`,
             `import {httpServer } from '@kjts20/tool-weixin-mp';`,
             useTypeList.length > 0 ? `import {${useTypeList.join(', ')}} from '${typeFile}';` : null,
             itemsContent
         ]
-            .filter(it => it)
+            .filter((it) => it)
             .join(lineTag);
     };
-    const requestFileDict = listGroupBy(requestList, it => it.fileName);
+    const requestFileDict = listGroupBy(requestList, (it) => it.fileName);
     for (const fileName in requestFileDict) {
         writeFile(`${saveRoot}/${fileName}.ts`, toRequestFileTmpl(requestFileDict[fileName]));
     }
@@ -392,7 +396,7 @@ const writeSettingFile = function (fileName, selectorOptionBeanList) {
     const toItemTmpl = function (item) {
         return [, `// ${item.description}`, `export const ${item.name} = ${JSON.stringify(item.values, null, 4)};`].join(lineTag);
     };
-    writeFile(fileName, selectorOptionBeanList.map(it => toItemTmpl(it)).join(lineTag));
+    writeFile(fileName, selectorOptionBeanList.map((it) => toItemTmpl(it)).join(lineTag));
 };
 
 /**
@@ -401,23 +405,23 @@ const writeSettingFile = function (fileName, selectorOptionBeanList) {
  * @param {类型列表} typeList
  */
 const toFormValidateList = function (serviceList, typeList) {
-    const typeDict = list2dict(typeList, it => it.name);
+    const typeDict = list2dict(typeList, (it) => it.name);
     const validataList = [];
-    serviceList.forEach(serviceItem => {
+    serviceList.forEach((serviceItem) => {
         serviceItem.params
-            .filter(it => it.in === 'body' && typeDict[it.type])
-            .forEach(it => {
+            .filter((it) => it.in === 'body' && typeDict[it.type])
+            .forEach((it) => {
                 const typeObj = typeDict[it.type];
                 const properties = typeObj.properties;
                 // 如果参数是非必填的，那么里面所有的属性都非必填
                 if (!it.required) {
-                    properties.forEach(it => {
+                    properties.forEach((it) => {
                         it.required = false;
                     });
                 }
                 validataList.push({
                     ...typeObj,
-                    properties: properties.map(param => {
+                    properties: properties.map((param) => {
                         const validates = [];
                         const { required, format, valueType } = param;
                         // 校验规则
@@ -445,7 +449,7 @@ const toFormValidateList = function (serviceList, typeList) {
                 });
             });
     });
-    return dict2List(list2dict(validataList, it => it.name));
+    return dict2List(list2dict(validataList, (it) => it.name));
 };
 
 /**
@@ -461,10 +465,10 @@ const writeFormValidateFile = function (fileName, validataList) {
         return `{column: '${name}', title: '${description}', validate: [${validates.join(', ')}]}`;
     };
     const toItemTmpl = function (item) {
-        return [`// ${item.description}`, `export const ${item.validateName} = [`, item.properties.map(it => tabTag + toItemParamsTmpl(it)).join(',' + lineTag), '];'].join(lineTag);
+        return [`// ${item.description}`, `export const ${item.validateName} = [`, item.properties.map((it) => tabTag + toItemParamsTmpl(it)).join(',' + lineTag), '];'].join(lineTag);
     };
     const toFileTmpl = function (list) {
-        const itemsContents = list.map(it => toItemTmpl(it));
+        const itemsContents = list.map((it) => toItemTmpl(it));
         return [`import { ${Array.from(new Set(validateList)).join(', ')} } from "@kjts20/tool";`, ...itemsContents].join(lineTag.repeat(2));
     };
     writeFile(fileName, toFileTmpl(validataList));
@@ -502,18 +506,18 @@ const generateTypesAndServiceList = async function (projectRoot = 'miniprogram')
         const typeList = (function (types, services) {
             // 请求中可选参数的对象获取
             const noRequiredTypes = [];
-            services.forEach(service => {
-                service?.params?.forEach(param => {
+            services.forEach((service) => {
+                service?.params?.forEach((param) => {
                     if (param && param.in === 'body' && !param.required && !noRequiredTypes.includes(param.type)) {
                         noRequiredTypes.push(param.type);
                     }
                 });
             });
             // 可选参数对象获取
-            return types.map(it => {
+            return types.map((it) => {
                 if (noRequiredTypes.includes(it.name) && !it.required) {
                     it.required = [];
-                    it.properties.forEach(propertie => {
+                    it.properties.forEach((propertie) => {
                         propertie.required = false;
                     });
                 }
@@ -554,7 +558,7 @@ const generateTypesAndServiceList = async function (projectRoot = 'miniprogram')
 // 生成类型、服务列表
 (function (rootDir, scriptFileName) {
     try {
-        generateTypesAndServiceList(rootDir).then(noteList => {
+        generateTypesAndServiceList(rootDir).then((noteList) => {
             writeJson(join(scriptFileName, '../note.json'), noteList);
         });
     } catch (e) {
