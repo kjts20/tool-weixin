@@ -26,6 +26,12 @@ const format2validateDict = {
     int32: 'validateInt',
     int64: 'validateInt'
 };
+/**
+ * [字典]format-数组校验
+ */
+const format2ArrValidateDict = {
+    'date-time': 'validateDateRange'
+};
 
 /**
  * 生成使用的key
@@ -94,14 +100,11 @@ const toTypesList = function (definitions, beanGenericityList) {
                 if (!useType) {
                     console.error('类型无法解析=>>', it, noteIt);
                 }
-                // 格式校验
-                const format = it?.format || it?.items?.format || null;
                 return {
                     required: Array.isArray(requiredAttrs) ? requiredAttrs.includes(name) : true,
                     type: useType,
                     name,
-                    format,
-                    validate: format2validateDict[format] || null,
+                    format: it?.format || it?.items?.format || null,
                     description
                 };
             })
@@ -387,14 +390,42 @@ const toFormValidateList = function (serviceList, typeList) {
             .filter(it => it.in === 'body' && typeDict[it.type])
             .forEach(it => {
                 const typeObj = typeDict[it.type];
+                const properties = typeObj.properties;
                 // 如果参数是非必填的，那么里面所有的属性都非必填
                 if (!it.required) {
-                    typeObj.properties.forEach(it => {
+                    properties.forEach(it => {
                         it.required = false;
                     });
                 }
                 validataList.push({
                     ...typeObj,
+                    properties: properties.map(param => {
+                        const validates = [];
+                        const { type, required, format } = param;
+                        // 校验规则
+                        const isArr = /^Array<.*?>$/.test(type);
+                        // 是否必填
+                        if (required) {
+                            if (isArr) {
+                                validates.push('validateArrRequired');
+                            } else {
+                                validates.push('validateRequired');
+                            }
+                        }
+                        // 格式校验
+                        if (format) {
+                            const validate = (isArr ? format2ArrValidateDict : format2validateDict)[format] || null;
+                            if (validate) {
+                                validates.push(validate);
+                            } else {
+                                console.log('无法识别的格式=>', param);
+                            }
+                        }
+                        return {
+                            ...param,
+                            validates
+                        };
+                    }),
                     validateName: `validate${firstUpperCase(typeObj.name)}`
                 });
             });
@@ -408,20 +439,11 @@ const toFormValidateList = function (serviceList, typeList) {
  * @param {校验文件} validataList
  */
 const writeFormValidateFile = function (fileName, validataList) {
-    const validateList = [];
+    let validateList = [];
     const toItemParamsTmpl = function (param) {
-        const validates = [];
-        // 是否必填
-        if (param.required) {
-            validateList.push('validateRequired');
-            validates.push('validateRequired');
-        }
-        // 格式校验
-        if (param.validate) {
-            validateList.push(param.validate);
-            validates.push(param.validate);
-        }
-        return `{column: '${param.name}', title: '${param.description}', validate: [${validates.join(', ')}]}`;
+        const { name, description, validates } = param;
+        validateList = validateList.concat(validates);
+        return `{column: '${name}', title: '${description}', validate: [${validates.join(', ')}]}`;
     };
     const toItemTmpl = function (item) {
         return [`// ${item.description}`, `export const ${item.validateName} = [`, item.properties.map(it => tabTag + toItemParamsTmpl(it)).join(',' + lineTag), '];'].join(lineTag);
