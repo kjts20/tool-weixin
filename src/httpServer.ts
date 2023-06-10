@@ -1,10 +1,26 @@
-import { HttpResponse, HttpServer, firstUpperCase, isStr } from '@kjts20/tool';
+import { HttpResponse, HttpServer, firstUpperCase, isFunc, isStr } from '@kjts20/tool';
 import { getToken } from './services/auth';
 
 export const httpServer = new HttpServer({
     host: '',
     apiPrefix: '/api',
     setHeader: function () {
+        const func = httpServerConfig.setHeader;
+        return isFunc(func) ? func() : {};
+    },
+    request: wx.request,
+    uploadFile: wx.uploadFile,
+    responseIntercept(response: HttpResponse) {
+        const func = httpServerConfig.responseIntercept;
+        return isFunc(func) ? func(response) : response;
+    }
+});
+/**
+ * 请求配置
+ */
+export const httpServerConfig = {
+    // 设置头部
+    setHeader() {
         // 登录token
         const token = getToken();
         const useHeader = {};
@@ -13,10 +29,11 @@ export const httpServer = new HttpServer({
         }
         return useHeader;
     },
-    request: wx.request,
-    uploadFile: wx.uploadFile,
-    responseIntercept: (response: HttpResponse) => response
-});
+    // 设置响应拦截
+    responseIntercept(response: HttpResponse) {
+        return response;
+    }
+};
 
 export const get: HttpServer['get'] = (...args) => httpServer.get(...args);
 export const post: HttpServer['post'] = (...args) => httpServer.post(...args);
