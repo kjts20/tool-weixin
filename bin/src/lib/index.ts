@@ -5,8 +5,13 @@ import { host } from '../config/env';
 import './extend/extend-page';
 // 扩展组件
 import './extend/extend-component';
+// 兼容方法
+import './extend/polyfill';
+// tabbar加载
 import { tabBar } from '@/config/tabbar';
+// 路由加载
 import { routes } from '@/config/route';
+// 消息加载
 import { startSystemMesssage, stopSystemMessage } from './tools/systemMessage';
 
 /**
